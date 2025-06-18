@@ -23,3 +23,13 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "ami_id" {
+  description = "EC2 AMI ID"
+  type        = string
+}
+
+variable "instance_type" {
+  description = "EC2 인스턴스 타입"
+  type        = string
+}

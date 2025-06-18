@@ -42,3 +42,41 @@ resource "aws_security_group_rule" "be_from_alb" {
   security_group_id        = aws_security_group.be_sg.id
   source_security_group_id = var.alb_security_group_id
 }
+
+# EC2 인스턴스 생성하는 템플릿
+resource "aws_launch_template" "be" {
+  name_prefix   = "be-lt-${var.env}"
+  image_id      = var.ami_id
+  instance_type = var.instance_type
+
+  iam_instance_profile {
+    name = aws_iam_instance_profile.be.name
+  }
+
+  user_data = base64encode(data.template_file.startup.rendered)
+
+  vpc_security_group_ids = [aws_security_group.be_sg.id]
+
+  monitoring {
+    enabled = true
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = merge(var.common_tags, {
+      Name        = "be-instance-${var.env}"
+      environment = var.env
+      component   = "be"
+      managedBy   = "terraform"
+    })
+  }
+
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      Name        = "be-volume-${var.env}"
+      environment = var.env
+      component   = "be"
+    }
+  }
+}
