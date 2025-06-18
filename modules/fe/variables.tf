@@ -33,6 +33,17 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
+variable "alb_arn_suffix" {
+  description = "ALB ARN Suffix"
+  type        = string
+}
+
+variable "request_per_target_threshold" {
+  description = "Target 하나당 초당 요청 수 목표치"
+  type        = number
+  default     = 50
+}
+
 variable "health_check_path" {
   description = "ALB에서 FE로 보낼 헬스 체크 HTTP 경로"
   type        = string

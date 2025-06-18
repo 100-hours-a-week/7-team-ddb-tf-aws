@@ -60,6 +60,10 @@ resource "aws_launch_template" "fe" {
     security_groups             = [aws_security_group.fe_sg.id]
   }
 
+  monitoring {
+    enabled = true
+  }
+
   tag_specifications {
     resource_type = "instance"
     tags = merge(var.common_tags, {
@@ -82,6 +86,8 @@ resource "aws_autoscaling_group" "fe" {
   health_check_type         = "ELB" 
   health_check_grace_period = 100
 
+  default_instance_warmup = 60
+
   launch_template {
     id      = aws_launch_template.fe.id
     version = "$Latest"
@@ -98,6 +104,23 @@ resource "aws_autoscaling_group" "fe" {
     value               = var.env
     propagate_at_launch = true
   }
+}
+
+resource "aws_autoscaling_policy" "fe_request_scaling" {
+  name                   = "fe-request-scaling-${var.env}"
+  autoscaling_group_name = aws_autoscaling_group.fe.name
+  policy_type            = "TargetTrackingScaling"
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ALBRequestCountPerTarget"
+      resource_label         = "${var.alb_arn_suffix}/${aws_lb_target_group.fe.arn_suffix}"
+    }
+
+    target_value              = var.request_per_target_threshold
+  }
+
+  depends_on = [aws_lb_target_group.fe]
 }
 
 resource "aws_lb_target_group" "fe" {
