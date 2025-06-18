@@ -73,6 +73,15 @@ resource "aws_launch_template" "fe" {
       managedBy   = "terraform"
     })
   }
+
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      Name        = "fe-volume-${var.env}"
+      environment = var.env
+      component   = "fe"
+    }
+  }
 }
 
 resource "aws_autoscaling_group" "fe" {
