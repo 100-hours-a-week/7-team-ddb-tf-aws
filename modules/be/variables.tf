@@ -39,6 +39,17 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
+variable "alb_arn_suffix" {
+  description = "ALB ARN Suffix"
+  type        = string
+}
+
+variable "target_cpu_utilization" {
+  description = "목표 CPU 사용률 (%)"
+  type        = number
+  default     = 60
+}
+
 variable "health_check_path" {
   description = "ALB에서 BE로 보낼 헬스 체크 HTTP 경로"
   type        = string

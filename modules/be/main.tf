@@ -105,6 +105,22 @@ resource "aws_autoscaling_group" "be" {
   }
 }
 
+resource "aws_autoscaling_policy" "be_cpu_scaling" {
+  name                   = "be-cpu-scaling-${var.env}"
+  autoscaling_group_name = aws_autoscaling_group.be.name
+  policy_type            = "TargetTrackingScaling"
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = var.target_cpu_utilization
+    disable_scale_in = false
+  }
+
+  depends_on = [aws_lb_target_group.be]
+}
+
 resource "aws_lb_target_group" "be" {
   name     = "tg-be-${var.env}"
   port     = var.be_port
