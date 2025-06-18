@@ -1,3 +1,4 @@
+
 # VPC
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
@@ -69,26 +70,25 @@ resource "aws_route_table_association" "public" {
 
 # NAT Gateway Elastic IP
 resource "aws_eip" "nat_eip" {
-  for_each = local.az_set
+  for_each = local.nat_azs
   tags = merge(var.common_tags, {
     Name = "nat-eip-${each.key}-${var.env}"
   })
 }
 
 resource "aws_nat_gateway" "this" {
-  for_each      = local.az_set
+  for_each      = local.nat_azs
   allocation_id = aws_eip.nat_eip[each.key].id
-  subnet_id     = lookup({ for k, s in aws_subnet.public : s.availability_zone => s.id }, each.key)
-  tags = merge(var.common_tags, {
-    Name = "nat-${each.key}-${var.env}"
-  })
+  # Place NAT Gateway in the public subnet for this AZ
+  subnet_id = lookup({ for s in aws_subnet.public : s.availability_zone => s.id }, each.key)
+
+  tags = merge(var.common_tags, { Name = "nat-${each.key}-${var.env}" })
 }
 
 # Private Route Table (NAT Gateway 연결)
 resource "aws_route_table" "private" {
-  for_each = local.az_set
-
-  vpc_id = aws_vpc.this.id
+  for_each = local.nat_azs
+  vpc_id   = aws_vpc.this.id
 
   route {
     cidr_block     = "0.0.0.0/0"
@@ -104,5 +104,5 @@ resource "aws_route_table" "private" {
 resource "aws_route_table_association" "private" {
   for_each       = aws_subnet.private
   subnet_id      = each.value.id
-  route_table_id = aws_route_table.private[each.value.availability_zone].id
+  route_table_id = length(local.nat_azs_list) == 1 ? aws_route_table.private[local.nat_azs_list[0]].id : aws_route_table.private[each.value.availability_zone].id
 }
