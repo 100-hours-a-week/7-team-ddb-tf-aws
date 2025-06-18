@@ -70,3 +70,70 @@ resource "aws_launch_template" "fe" {
     })
   }
 }
+
+resource "aws_autoscaling_group" "fe" {
+  name                      = "fe-asg-${var.env}"
+  desired_capacity          = 1
+  min_size                  = 1
+  max_size                  = 2
+  vpc_zone_identifier       = var.subnet_ids
+
+  target_group_arns = [aws_lb_target_group.fe.arn]
+  health_check_type         = "ELB" 
+  health_check_grace_period = 100
+
+  launch_template {
+    id      = aws_launch_template.fe.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "fe-instance-${var.env}"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Environment"
+    value               = var.env
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_lb_target_group" "fe" {
+  name     = "tg-fe-${var.env}"
+  port     = var.fe_port
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+
+  health_check {
+    path                = var.health_check_path
+    matcher             = "200-399"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
+
+  target_type = "instance"
+
+  tags = merge(var.common_tags, {
+    Name = "fe-tg-${var.env}"
+  })
+}
+
+resource "aws_lb_listener_rule" "fe_host_rule" {
+  listener_arn = var.alb_listener_arn_https
+  priority     = var.listener_rule_priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.fe.arn
+  }
+
+  condition {
+    host_header {
+      values = var.host_header_values
+    }
+  }
+}
