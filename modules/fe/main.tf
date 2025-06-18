@@ -42,3 +42,31 @@ resource "aws_security_group_rule" "fe_from_alb" {
   security_group_id        = aws_security_group.fe_sg.id
   source_security_group_id = var.alb_security_group_id
 }
+
+# EC2 인스턴스 생성하는 템플릿
+resource "aws_launch_template" "fe" {
+  name_prefix   = "fe-lt-${var.env}"
+  image_id      = var.ami_id
+  instance_type = var.instance_type
+
+  iam_instance_profile {
+    name = aws_iam_instance_profile.fe.name
+  }
+
+  user_data = base64encode(data.template_file.startup.rendered)
+
+  network_interfaces {
+    associate_public_ip_address = false
+    security_groups             = [aws_security_group.fe_sg.id]
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = merge(var.common_tags, {
+      Name        = "fe-instance-${var.env}"
+      environment = var.env
+      component   = "fe"
+      managedBy   = "terraform"
+    })
+  }
+}

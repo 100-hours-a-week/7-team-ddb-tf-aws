@@ -8,6 +8,16 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "ami_id" {
+  description = "EC2 AMI ID"
+  type        = string
+}
+
+variable "instance_type" {
+  description = "EC2 인스턴스 타입"
+  type        = string
+}
+
 variable "fe_port" {
   description = "FE 애플리케이션 포트"
   type        = number
