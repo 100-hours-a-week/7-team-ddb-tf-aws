@@ -55,10 +55,7 @@ resource "aws_launch_template" "fe" {
 
   user_data = base64encode(data.template_file.startup.rendered)
 
-  network_interfaces {
-    associate_public_ip_address = false
-    security_groups             = [aws_security_group.fe_sg.id]
-  }
+  vpc_security_group_ids = [aws_security_group.fe_sg.id]
 
   monitoring {
     enabled = true
@@ -94,24 +91,15 @@ resource "aws_autoscaling_group" "fe" {
   target_group_arns = [aws_lb_target_group.fe.arn]
   health_check_type         = "ELB" 
   health_check_grace_period = 100
-
   default_instance_warmup = 60
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   launch_template {
     id      = aws_launch_template.fe.id
-    version = "$Latest"
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "fe-instance-${var.env}"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Environment"
-    value               = var.env
-    propagate_at_launch = true
+    version = "Latest"
   }
 }
 
@@ -125,8 +113,8 @@ resource "aws_autoscaling_policy" "fe_request_scaling" {
       predefined_metric_type = "ALBRequestCountPerTarget"
       resource_label         = "${var.alb_arn_suffix}/${aws_lb_target_group.fe.arn_suffix}"
     }
-
     target_value              = var.request_per_target_threshold
+    disable_scale_in = false
   }
 
   depends_on = [aws_lb_target_group.fe]
@@ -168,4 +156,6 @@ resource "aws_lb_listener_rule" "fe_host_rule" {
       values = var.host_header_values
     }
   }
+
+  depends_on = [aws_lb_target_group.fe]
 }
