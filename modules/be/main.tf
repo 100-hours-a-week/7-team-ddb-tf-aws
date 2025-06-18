@@ -80,3 +80,67 @@ resource "aws_launch_template" "be" {
     }
   }
 }
+
+resource "aws_autoscaling_group" "be" {
+  name                      = "be-asg-${var.env}"
+  desired_capacity          = 1
+  min_size                  = 1
+  max_size                  = 2
+  vpc_zone_identifier       = var.subnet_ids
+
+  target_group_arns         = [aws_lb_target_group.be.arn]
+  health_check_type         = "ELB"
+  health_check_grace_period = 100
+  default_instance_warmup = 60
+
+  force_delete               = false
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  launch_template {
+    id      = aws_launch_template.be.id
+    version = "Latest"
+  }
+}
+
+resource "aws_lb_target_group" "be" {
+  name     = "tg-be-${var.env}"
+  port     = var.be_port
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+
+  health_check {
+    path                = var.health_check_path
+    matcher             = "200-399"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
+
+  target_type = "instance"
+
+  tags = merge(var.common_tags, {
+    Name = "be-tg-${var.env}"
+  })
+}
+
+resource "aws_lb_listener_rule" "be_host_rule" {
+  listener_arn = var.alb_listener_arn_https
+  priority     = var.listener_rule_priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.be.arn
+  }
+
+  condition {
+    host_header {
+      values = var.host_header_values
+    }
+  }
+
+  depends_on = [aws_lb_target_group.be]
+}
