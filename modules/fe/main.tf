@@ -15,3 +15,30 @@ resource "aws_iam_instance_profile" "fe" {
   name = "fe-instance-profile-${var.env}"
   role = aws_iam_role.fe_ssm.name
 }
+
+resource "aws_security_group" "fe_sg" {
+  name        = "fe-sg-${var.env}"
+  description = "Allow FE access"
+  vpc_id      = var.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.common_tags, {
+    Name = "fe-sg-${var.env}"
+  })
+}
+
+# ALB 보안 그룹에서 들어오는 요청만 허용
+resource "aws_security_group_rule" "fe_from_alb" {
+  type                     = "ingress"
+  from_port                = var.fe_port
+  to_port                  = var.fe_port
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.fe_sg.id
+  source_security_group_id = var.alb_security_group_id
+}
