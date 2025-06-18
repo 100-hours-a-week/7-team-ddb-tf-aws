@@ -3,3 +3,79 @@ variable "aws_region" {
   type        = string
   default     = "ap-northeast-2"
 }
+
+variable "vpc_cidr" {
+  description = "VPC CIDR block"
+  type        = string
+  default     = "10.10.0.0/16"
+}
+
+variable "public_subnets" {
+  description = "public subnet 정보"
+  type = map(object({
+    cidr                    = string
+    az                      = string
+    map_public_ip_on_launch = bool
+  }))
+  default = {
+    tool-a = {
+      cidr                    = "10.10.1.0/24"
+      az                      = "ap-northeast-2a"
+      map_public_ip_on_launch = true
+    },
+    tool-b = {
+      cidr                    = "10.10.2.0/24"
+      az                      = "ap-northeast-2c"
+      map_public_ip_on_launch = true
+    },
+  }
+}
+
+variable "private_subnets" {
+  description = "private subnet 정보"
+  type = map(object({
+    cidr = string
+    az   = string
+  }))
+  default = {
+    fe-a = {
+      cidr = "10.10.10.0/24"
+      az   = "ap-northeast-2a"
+    },
+    fe-b = {
+      cidr = "10.10.20.0/24"
+      az   = "ap-northeast-2c"
+    },
+    be-a = {
+      cidr = "10.10.110.0/24"
+      az   = "ap-northeast-2a"
+    },
+    be-b = {
+      cidr = "10.10.120.0/24"
+      az   = "ap-northeast-2c"
+    },
+    db-a = {
+      cidr = "10.10.210.0/24"
+      az   = "ap-northeast-2a"
+    },
+    db-b = {
+      cidr = "10.10.220.0/24"
+      az   = "ap-northeast-2c"
+    },
+  }
+}
+
+variable "common_tags" {
+  description = "모든 리소스에 적용할 공통 태그"
+  type        = map(string)
+  default = {
+    Environment = "prod"
+    Owner       = "dolpin"
+  }
+}
+
+variable "env" {
+  description = "환경"
+  type        = string
+  default     = "prod"
+}
