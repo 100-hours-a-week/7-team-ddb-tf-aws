@@ -36,6 +36,42 @@ variable "kms_key" {
   default     = null
 }
 
+variable "repository_policy" {
+  description = "ECR 리포지토리에 적용할 IAM 정책(JSON 문자열)"
+  type    = string
+  default = null
+}
+
+variable "enable_lifecycle_policy" {
+  description = "라이프사이클 정책 활성화 여부"
+  type        = bool
+  default     = true
+}
+
+variable "lifecycle_policy_rules" {
+  description = "ECR 라이프사이클 정책 정의 목록"
+  type = list(object({
+    rulePriority = number
+    description  = string
+    tagStatus    = string
+    countType    = string
+    countUnit    = string
+    countNumber  = number
+    action_type  = string
+  }))
+  default = [
+    {
+      rulePriority = 1
+      description  = "Expire untagged images after 10 days"
+      tagStatus    = "untagged"
+      countType    = "sinceImagePushed"
+      countUnit    = "days"
+      countNumber  = 10
+      action_type  = "expire"
+    }
+  ]
+}
+
 variable "common_tags" {
   description = "기본 태그"
   type        = map(string)
