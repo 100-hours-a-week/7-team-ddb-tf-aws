@@ -15,3 +15,30 @@ resource "aws_iam_instance_profile" "be" {
   name = "be-instance-profile-${var.env}"
   role = aws_iam_role.be_ssm.name
 }
+
+resource "aws_security_group" "be_sg" {
+  name        = "be-sg-${var.env}"
+  description = "Allow BE access"
+  vpc_id      = var.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.common_tags, {
+    Name = "be-sg-${var.env}"
+  })
+}
+
+# ALB 보안 그룹에서 들어오는 요청만 허용
+resource "aws_security_group_rule" "be_from_alb" {
+  type                     = "ingress"
+  from_port                = var.be_port
+  to_port                  = var.be_port
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.be_sg.id
+  source_security_group_id = var.alb_security_group_id
+}
