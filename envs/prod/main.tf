@@ -27,3 +27,23 @@ module "network" {
   common_tags     = var.common_tags
   env             = var.env
 }
+
+module "ecr_backend" {
+  source = "../../modules/ecr"
+
+  env                     = var.env
+  name                    = var.be_ecr_name
+  image_tag_mutability    = var.image_tag_mutability
+  scan_on_push            = var.scan_on_push
+  encryption_type         = var.encryption_type
+}
+
+module "ecr_frontend" {
+  source = "../../modules/ecr"
+
+  env                     = var.env
+  name                    = var.fe_ecr_name
+  image_tag_mutability    = var.image_tag_mutability
+  scan_on_push            = var.scan_on_push
+  encryption_type         = var.encryption_type
+}
