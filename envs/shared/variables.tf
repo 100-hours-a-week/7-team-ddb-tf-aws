@@ -61,5 +61,5 @@ variable "env" {
 variable "domain_zone_name" {
   description = "환경"
   type        = string
-  default     = "dolpin.shop"
+  default     = "dolpin.site"
 }
