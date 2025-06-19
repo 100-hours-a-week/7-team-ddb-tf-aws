@@ -79,3 +79,27 @@ variable "env" {
   type        = string
   default     = "prod"
 }
+
+variable "db_engine" {
+  description = "database engine 종류 (ex: mysql, postgres 등)"
+  type = string
+  default = "postgres"
+}
+
+variable "db_engine_version" {
+  description = "database engine 버전"
+  type = string
+  default = "15.7"
+}
+
+variable "db_instance_class" {
+  description = "database instance class (ex: db.t3.micro)"
+  type = string
+  default = "db.t3.micro"
+}
+
+variable "db_multi_az" {
+  description = "db가 multi az 지원 여부"
+  type = bool
+  default = true
+}
