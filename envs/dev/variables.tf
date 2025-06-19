@@ -41,9 +41,13 @@ variable "private_subnets" {
       cidr = "10.20.110.0/24"
       az   = "ap-northeast-2a"
     }
-    db = {
+    db-a = {
       cidr = "10.20.210.0/24"
       az   = "ap-northeast-2a"
+    }
+    db-c = {
+      cidr = "10.20.220.0/24"
+      az   = "ap-northeast-2c"
     }
   }
 }
@@ -63,8 +67,33 @@ variable "env" {
   default     = "dev"
 }
 
+
 variable "domain_zone_name" {
   description = "환경"
   type        = string
   default     = "dolpin.shop"
+}
+
+variable "db_engine" {
+  description = "database engine 종류 (ex: mysql, postgres 등)"
+  type = string
+  default = "postgres"
+}
+
+variable "db_engine_version" {
+  description = "database engine 버전"
+  type = string
+  default = "15.7"
+}
+
+variable "db_instance_class" {
+  description = "database instance class (ex: db.t3.micro)"
+  type = string
+  default = "db.t3.micro"
+}
+
+variable "db_multi_az" {
+  description = "db가 multi az 지원 여부"
+  type = bool
+  default = false
 }
