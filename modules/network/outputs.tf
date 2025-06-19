@@ -17,3 +17,7 @@ output "db_subnet_ids" {
   description = "DB subnet ID 리스트"
   value       = [for k, s in aws_subnet.private : s.id if startswith(k, "db")]
 }
+
+output "private_route_table_ids" {
+  value = values(aws_route_table.private)[*].id
+}
