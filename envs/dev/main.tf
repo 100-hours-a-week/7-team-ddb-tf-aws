@@ -27,3 +27,10 @@ module "network" {
   common_tags     = var.common_tags
   env             = var.env
 }
+
+module "route53" {
+  source = "../../modules/route53"
+  domain_zone_name = var.domain_zone_name
+  domains_alias = []
+  domains_records = []
+}
