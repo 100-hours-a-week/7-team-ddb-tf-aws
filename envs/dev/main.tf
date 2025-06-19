@@ -38,6 +38,10 @@ module "shared_to_dev_peering" {
   accepter_vpc_id            = module.network.vpc_id
   requester_vpc_cidr         = data.terraform_remote_state.shared.outputs.vpc_cidr
   accepter_vpc_cidr          = var.vpc_cidr
-  requester_route_table_ids  = data.terraform_remote_state.shared.outputs.private_route_table_ids
-  accepter_route_table_ids   = module.network.private_route_table_ids
+  requester_route_table_ids = {
+    default = data.terraform_remote_state.shared.outputs.private_route_table_ids["ap-northeast-2a"]
+  }
+  accepter_route_table_ids = {
+    default = module.network.private_route_table_ids["ap-northeast-2a"]
+  }
 }

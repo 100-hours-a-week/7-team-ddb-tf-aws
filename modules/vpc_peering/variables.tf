@@ -36,10 +36,10 @@ variable "auto_accept" {
 
 variable "requester_route_table_ids" {
   description = "shared VPC의 route table id 목록 (cicd, monitoring 등)"
-  type        = list(string)
+  type        = map(string)
 }
 
 variable "accepter_route_table_ids" {
   description = "dev 또는 prod VPC의 route table id 목록 (fe, be, db 등)"
-  type        = list(string)
+  type        = map(string)
 }
