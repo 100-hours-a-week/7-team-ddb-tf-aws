@@ -28,6 +28,14 @@ module "network" {
   env             = var.env
 }
 
+
+module "route53" {
+  source = "../../modules/route53"
+  domain_zone_name = var.domain_zone_name
+  domains_alias = []
+  domains_records = []
+}
+
 module "rds" {
   source = "../../modules/rds"
     vpc_id                = module.network.vpc_id
@@ -41,3 +49,4 @@ module "rds" {
   db_instance_class     = var.db_instance_class
   db_multi_az           = var.db_multi_az
 }
+

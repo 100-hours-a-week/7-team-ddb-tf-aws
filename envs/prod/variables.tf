@@ -80,6 +80,13 @@ variable "env" {
   default     = "prod"
 }
 
+
+variable "domain_zone_name" {
+  description = "환경"
+  type        = string
+  default     = "dolpin.shop"
+}
+
 variable "db_engine" {
   description = "database engine 종류 (ex: mysql, postgres 등)"
   type = string
