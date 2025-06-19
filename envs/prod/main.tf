@@ -28,6 +28,14 @@ module "network" {
   env             = var.env
 }
 
+module "loadbalancer" {
+  source            = "../../modules/loadbalancer"
+  vpc_id            = module.network.vpc_id
+  public_subnet_ids = module.network.public_subnet_ids
+  cert_arn          = ""
+  common_tags       = var.common_tags
+  env               = var.env
+}
 
 module "route53" {
   source = "../../modules/route53"
@@ -49,4 +57,3 @@ module "rds" {
   db_instance_class     = var.db_instance_class
   db_multi_az           = var.db_multi_az
 }
-
