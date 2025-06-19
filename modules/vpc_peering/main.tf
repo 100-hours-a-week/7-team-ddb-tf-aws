@@ -24,7 +24,7 @@ resource "aws_vpc_peering_connection" "this" {
 
 # 요청자 VPC의 라우팅 테이블에 수락자 VPC의 CIDR로 가는 트래픽은 해당 VPC 피어링 연결로 전송하라는 라우팅 경로를 설정
 resource "aws_route" "requester_to_accepter" {
-  for_each = toset(compact(var.requester_route_table_ids))
+  for_each = var.requester_route_table_ids
 
   route_table_id            = each.value
   destination_cidr_block    = var.accepter_vpc_cidr
@@ -33,7 +33,7 @@ resource "aws_route" "requester_to_accepter" {
 
 # 수락자 VPC의 라우팅 테이블에도 요청자 VPC로 향하는 경로를 설정함
 resource "aws_route" "accepter_to_requester" {
-  for_each = toset(compact(var.accepter_route_table_ids))
+  for_each = var.accepter_route_table_ids
 
   route_table_id            = each.value
   destination_cidr_block    = var.requester_vpc_cidr
