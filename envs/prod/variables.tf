@@ -140,3 +140,9 @@ variable "db_multi_az" {
   type = bool
   default = true
 }
+
+variable "nat_azs" {
+  description = "NAT Gateway를 배치할 AZ 목록"
+  type        = list(string)
+  default     = ["ap-northeast-2a", "ap-northeast-2c"]
+}

@@ -27,6 +27,7 @@ module "network" {
   private_subnets = var.private_subnets
   common_tags     = var.common_tags
   env             = var.env
+  nat_azs = var.nat_azs
 }
 
 module "shared_to_dev_peering" {
