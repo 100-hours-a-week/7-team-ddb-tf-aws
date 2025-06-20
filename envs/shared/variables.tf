@@ -63,3 +63,9 @@ variable "domain_zone_name" {
   type        = string
   default     = "dolpin.site"
 }
+
+variable "nat_azs" {
+  description = "NAT Gateway를 배치할 AZ 목록"
+  type        = list(string)
+  default     = ["ap-northeast-2a"]
+}

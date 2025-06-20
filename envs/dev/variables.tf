@@ -18,9 +18,14 @@ variable "public_subnets" {
     map_public_ip_on_launch = bool
   }))
   default = {
-    tool = {
+    tool-a = {
       cidr                    = "10.20.1.0/24"
       az                      = "ap-northeast-2a"
+      map_public_ip_on_launch = true
+    }
+    tool-c = {
+      cidr                    = "10.20.2.0/24"
+      az                      = "ap-northeast-2c"
       map_public_ip_on_launch = true
     }
   }
@@ -33,13 +38,21 @@ variable "private_subnets" {
     az   = string
   }))
   default = {
-    fe = {
+    fe-a = {
       cidr = "10.20.10.0/24"
       az   = "ap-northeast-2a"
     }
-    be = {
+    fe-c = {
+      cidr = "10.20.20.0/24"
+      az   = "ap-northeast-2c"
+    }
+    be-a = {
       cidr = "10.20.110.0/24"
       az   = "ap-northeast-2a"
+    }
+    be-c = {
+      cidr = "10.20.120.0/24"
+      az   = "ap-northeast-2c"
     }
     db-a = {
       cidr = "10.20.210.0/24"
@@ -126,4 +139,9 @@ variable "db_multi_az" {
   description = "db가 multi az 지원 여부"
   type = bool
   default = false
+}
+variable "nat_azs" {
+  description = "NAT Gateway를 배치할 AZ 목록"
+  type        = list(string)
+  default     = ["ap-northeast-2a"]
 }

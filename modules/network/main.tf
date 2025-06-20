@@ -71,6 +71,7 @@ resource "aws_route_table_association" "public" {
 # NAT Gateway Elastic IP
 resource "aws_eip" "nat_eip" {
   for_each = local.nat_azs
+  
   tags = merge(var.common_tags, {
     Name = "nat-eip-${each.key}-${var.env}"
   })
@@ -79,10 +80,11 @@ resource "aws_eip" "nat_eip" {
 resource "aws_nat_gateway" "this" {
   for_each      = local.nat_azs
   allocation_id = aws_eip.nat_eip[each.key].id
-  # Place NAT Gateway in the public subnet for this AZ
-  subnet_id = lookup({ for s in aws_subnet.public : s.availability_zone => s.id }, each.key)
+  subnet_id     = lookup({ for k, s in aws_subnet.public : s.availability_zone => s.id }, each.key)
 
-  tags = merge(var.common_tags, { Name = "nat-${each.key}-${var.env}" })
+  tags = merge(var.common_tags, {
+    Name = "nat-${each.key}-${var.env}"
+  })
 }
 
 # Private Route Table (NAT Gateway 연결)
