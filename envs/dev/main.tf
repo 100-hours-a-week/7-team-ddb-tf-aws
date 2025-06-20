@@ -14,6 +14,7 @@ terraform {
     use_lockfile = true
   }
 }
+
 # AWS Provider
 provider "aws" {
   region = var.aws_region
@@ -26,6 +27,23 @@ module "network" {
   private_subnets = var.private_subnets
   common_tags     = var.common_tags
   env             = var.env
+}
+
+module "shared_to_dev_peering" {
+  source = "../../modules/vpc_peering"
+
+  env                        = var.env
+  component                  = "shared-to-dev"
+  requester_vpc_id           = data.terraform_remote_state.shared.outputs.vpc_id
+  accepter_vpc_id            = module.network.vpc_id
+  requester_vpc_cidr         = data.terraform_remote_state.shared.outputs.vpc_cidr
+  accepter_vpc_cidr          = var.vpc_cidr
+  requester_route_table_ids = {
+    default = data.terraform_remote_state.shared.outputs.private_route_table_ids["ap-northeast-2a"]
+  }
+  accepter_route_table_ids = {
+    default = module.network.private_route_table_ids["ap-northeast-2a"]
+  }
 }
 
 module "ecr_backend" {
