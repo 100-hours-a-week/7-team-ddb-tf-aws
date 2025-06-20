@@ -14,6 +14,7 @@ terraform {
     use_lockfile = true
   }
 }
+
 # AWS Provider
 provider "aws" {
   region = var.aws_region
@@ -44,4 +45,54 @@ module "shared_to_prod_peering" {
     "ap-northeast-2a" = module.network.private_route_table_ids["ap-northeast-2a"]
     "ap-northeast-2c" = module.network.private_route_table_ids["ap-northeast-2c"]
   }
+}
+    
+module "ecr_backend" {
+  source = "../../modules/ecr"
+
+  env                     = var.env
+  name                    = var.be_ecr_name
+  image_tag_mutability    = var.image_tag_mutability
+  scan_on_push            = var.scan_on_push
+  encryption_type         = var.encryption_type
+}
+
+module "ecr_frontend" {
+  source = "../../modules/ecr"
+
+  env                     = var.env
+  name                    = var.fe_ecr_name
+  image_tag_mutability    = var.image_tag_mutability
+  scan_on_push            = var.scan_on_push
+  encryption_type         = var.encryption_type
+}
+
+module "loadbalancer" {
+  source            = "../../modules/loadbalancer"
+  vpc_id            = module.network.vpc_id
+  public_subnet_ids = module.network.public_subnet_ids
+  cert_arn          = ""
+  common_tags       = var.common_tags
+  env               = var.env
+}
+
+module "route53" {
+  source = "../../modules/route53"
+  domain_zone_name = var.domain_zone_name
+  domains_alias = {}
+  domains_records = {}
+}
+
+module "rds" {
+  source = "../../modules/rds"
+    vpc_id                = module.network.vpc_id
+  db_subnet_ids         = module.network.db_subnet_ids
+  common_tags           = var.common_tags
+  env                   = var.env
+  allow_sg_list         = []
+  allow_cidr_block_list = []
+  db_engine             = var.db_engine
+  db_engine_version     = var.db_engine_version
+  db_instance_class     = var.db_instance_class
+  db_multi_az           = var.db_multi_az
 }

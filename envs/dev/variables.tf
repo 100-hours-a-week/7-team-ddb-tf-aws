@@ -41,9 +41,13 @@ variable "private_subnets" {
       cidr = "10.20.110.0/24"
       az   = "ap-northeast-2a"
     }
-    db = {
+    db-a = {
       cidr = "10.20.210.0/24"
       az   = "ap-northeast-2a"
+    }
+    db-c = {
+      cidr = "10.20.220.0/24"
+      az   = "ap-northeast-2c"
     }
   }
 }
@@ -61,4 +65,65 @@ variable "env" {
   description = "환경"
   type        = string
   default     = "dev"
+}
+
+### ECR
+variable "be_ecr_name" {
+  description = "Backend ECR 리포지토리 이름"
+  type        = string
+  default     = "dolpin-backend"
+}
+
+variable "fe_ecr_name" {
+  description = "Frontend ECR 리포지토리 이름"
+  type        = string
+  default     = "dolpin-frontend"
+}
+
+variable "image_tag_mutability" {
+  description = "태그 변경 가능 여부"
+  type        = string
+  default     = "IMMUTABLE"
+}
+
+variable "scan_on_push" {
+  description = "푸시 시 이미지 자동 보안 스캔 여부"
+  type        = bool
+  default     = true
+}
+
+variable "encryption_type" {
+  description = "암호화 방식"
+  type        = string
+  default     = "AES256"
+}
+
+variable "domain_zone_name" {
+  description = "환경"
+  type        = string
+  default     = "dolpin.site"
+}
+
+variable "db_engine" {
+  description = "database engine 종류 (ex: mysql, postgres 등)"
+  type = string
+  default = "postgres"
+}
+
+variable "db_engine_version" {
+  description = "database engine 버전"
+  type = string
+  default = "15.7"
+}
+
+variable "db_instance_class" {
+  description = "database instance class (ex: db.t3.micro)"
+  type = string
+  default = "db.t3.micro"
+}
+
+variable "db_multi_az" {
+  description = "db가 multi az 지원 여부"
+  type = bool
+  default = false
 }
