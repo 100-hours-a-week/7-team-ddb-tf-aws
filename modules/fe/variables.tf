@@ -28,6 +28,12 @@ variable "alb_security_group_id" {
   type        = string
 }
 
+variable "allowed_cidrs" {
+  description = "허용할 CIDR 리스트 (VPC Peering 등)"
+  type        = list(string)
+  default     = []
+}
+
 variable "subnet_ids" {
   description = "FE가 배치될 서브넷 리스트"
   type        = list(string)

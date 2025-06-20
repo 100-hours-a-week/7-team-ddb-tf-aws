@@ -41,6 +41,20 @@ resource "aws_security_group_rule" "fe_from_alb" {
   protocol                 = "tcp"
   security_group_id        = aws_security_group.fe_sg.id
   source_security_group_id = var.alb_security_group_id
+  description              = "Allow from ALB"
+}
+
+# 추가 CIDR → FE 허용
+resource "aws_security_group_rule" "fe_from_additional_cidrs" {
+  for_each = toset(var.allowed_cidrs)
+
+  type              = "ingress"
+  from_port         = var.fe_port
+  to_port           = var.fe_port
+  protocol          = "tcp"
+  cidr_blocks       = [each.key]
+  security_group_id = aws_security_group.fe_sg.id
+  description       = "Allow from additional CIDR ${each.key}"
 }
 
 # EC2 인스턴스 생성하는 템플릿
