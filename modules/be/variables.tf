@@ -18,6 +18,12 @@ variable "alb_security_group_id" {
   type        = string
 }
 
+variable "allowed_cidrs" {
+  description = "허용할 CIDR 리스트 (VPC Peering 등)"
+  type        = list(string)
+  default     = []
+}
+
 variable "common_tags" {
   description = "기본 태그"
   type        = map(string)
