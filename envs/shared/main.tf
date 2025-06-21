@@ -33,7 +33,7 @@ module "loadbalancer" {
   source            = "../../modules/loadbalancer"
   vpc_id            = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
-  cert_arn          = ""
+  cert_arn          = module.acm.cert_arn
   common_tags       = var.common_tags
   env               = var.env
 }
@@ -43,4 +43,13 @@ module "route53" {
   domain_zone_name = var.domain_zone_name
   domains_alias = {}
   domains_records = {}
+}
+
+module "acm_seoul" {
+  providers                 = { aws = aws.seoul }
+  source                    = "../../modules/acm"
+  common_tags               = var.common_tags
+  env                       = var.env
+  domain_name               = var.domain_zone_name
+  subject_alternative_names = ["*.dolpin.site"]
 }
