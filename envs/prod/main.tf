@@ -104,7 +104,7 @@ module "acm_seoul" {
   common_tags               = var.common_tags
   env                       = var.env
   domain_name               = var.domain_zone_name
-  subject_alternative_names = ["*.boamoa.shop"]
+  subject_alternative_names = ["*.dolpin.site"]
 }
 
 
@@ -114,5 +114,5 @@ module "acm_nova" {
   common_tags               = var.common_tags
   env                       = var.env
   domain_name               = var.domain_zone_name
-  subject_alternative_names = ["*.boamoa.shop"]
+  subject_alternative_names = ["*.dolpin.site"]
 }
