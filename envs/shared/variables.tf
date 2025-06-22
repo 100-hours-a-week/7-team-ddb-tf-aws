@@ -63,10 +63,22 @@ variable "env" {
   default     = "shared"
 }
 
+variable "domain_name" {
+  description = "환경"
+  type        = string
+  default     = "shared.dolpin.site"
+}
+
 variable "domain_zone_name" {
   description = "환경"
   type        = string
   default     = "dolpin.site"
+}
+
+variable "domain_wildcard" {
+  description = "도메인 인증서 와일드 카드"
+  type        = string
+  default     = "*.shared.dolpin.site"
 }
 
 variable "nat_azs" {
