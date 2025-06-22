@@ -42,10 +42,7 @@ module "shared_to_prod_peering" {
   requester_route_table_ids = {
     "ap-northeast-2a" = data.terraform_remote_state.shared.outputs.private_route_table_ids["ap-northeast-2a"]
   }
-  accepter_route_table_ids = {
-    "ap-northeast-2a" = module.network.private_route_table_ids["ap-northeast-2a"]
-    "ap-northeast-2c" = module.network.private_route_table_ids["ap-northeast-2c"]
-  }
+  accepter_route_table_ids  = module.network.private_route_table_ids
 }
     
 module "ecr_backend" {
