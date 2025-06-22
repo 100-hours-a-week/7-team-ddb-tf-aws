@@ -7,7 +7,10 @@ variable "env" {
   description = "환경"
   type = string
 }
-
+variable "domain_zone_name" {
+  description = "domain zone 이름"
+  type = string
+}
 variable "domain_name" {
   description = "domain 이름"
   type = string

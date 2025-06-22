@@ -117,6 +117,18 @@ variable "domain_zone_name" {
   default     = "dolpin.site"
 }
 
+variable "domain_name" {
+  description = "환경"
+  type        = string
+  default     = "dolpin.site"
+}
+
+variable "domain_wildcard" {
+  description = "도메인 인증서 와일드 카드"
+  type        = string
+  default     = "*.dolpin.site"
+}
+
 variable "db_engine" {
   description = "database engine 종류 (ex: mysql, postgres 등)"
   type = string

@@ -50,6 +50,7 @@ module "acm_seoul" {
   source                    = "../../modules/acm"
   common_tags               = var.common_tags
   env                       = var.env
-  domain_name               = var.domain_zone_name
-  subject_alternative_names = ["*.dolpin.site"]
+  domain_name               = var.domain_name
+  domain_zone_name = var.domain_zone_name
+  subject_alternative_names = [var.domain_wildcard]
 }
