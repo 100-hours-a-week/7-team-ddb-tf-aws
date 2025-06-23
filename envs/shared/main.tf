@@ -60,10 +60,8 @@ module "jenkins_instance" {
 }
 
 module "iam_jenkins" {
-  source      = "./modules/iam"
+  source      = "./modules/iam/jenkins"
   role_name   = "jenkins"
-  attach_ecr  = true
-  attach_s3   = false
 }
 
 module "monitoring_instance" {
@@ -81,8 +79,6 @@ module "monitoring_instance" {
 }
 
 module "iam_monitoring" {
-  source      = "./modules/iam"
+  source      = "./modules/iam/monitoring" 
   role_name   = "monitoring"
-  attach_ecr  = false
-  attach_s3   = true
 }
