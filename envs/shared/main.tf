@@ -44,3 +44,45 @@ module "route53" {
   domains_alias = {}
   domains_records = {}
 }
+
+module "jenkins_instance" {
+  source         = "./modules/ec2"
+  name_prefix    = "shared"
+  name           = "jenkins"
+  instance_type  = var.jenkins_instance_type
+  ami_id         = var.ami_id
+  subnet_id      = module.network.private_subnet_ids["cicd"]
+  vpc_id         = module.network.vpc_id
+  user_data      = filebase64("${path.module}/scripts/startup_jenkins.sh")
+  ingress_rules  = var.jenkins_ingress_rules
+  common_tags    = var.common_tags
+  iam_instance_profile_name = module.iam_jenkins.instance_profile_name
+}
+
+module "iam_jenkins" {
+  source      = "./modules/iam"
+  role_name   = "jenkins"
+  attach_ecr  = true
+  attach_s3   = false
+}
+
+module "monitoring_instance" {
+  source         = "./modules/ec2"
+  name_prefix    = "shared"
+  name           = "monitoring"
+  instance_type  = var.monitoring_instance_type
+  ami_id         = var.ami_id
+  subnet_id      = module.network.private_subnet_ids["monitoring"]
+  vpc_id         = module.network.vpc_id
+  user_data      = filebase64("${path.module}/scripts/startup_monitoring.sh")
+  ingress_rules  = var.monitoring_ingress_rules
+  common_tags    = var.common_tags
+  iam_instance_profile_name = module.iam_monitoring.instance_profile_name
+}
+
+module "iam_monitoring" {
+  source      = "./modules/iam"
+  role_name   = "monitoring"
+  attach_ecr  = false
+  attach_s3   = true
+}

@@ -69,3 +69,53 @@ variable "nat_azs" {
   type        = list(string)
   default     = ["ap-northeast-2a"]
 }
+
+variable "ami_id" {
+  description = "jenkins, monitoring instance type"
+  type        = string
+  default     = "ami-08943a151bd468f4e"
+}
+
+variable "jenkins_instance_type" {
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "jenkins_ingress_rules" {
+  description = "각 포트별 ingress 접근 허용 규칙 (CIDR 또는 SG ID)"
+  type = list(object({
+    port                      = number
+    cidrs                     = optional(list(string), [])
+    source_security_group_ids = optional(list(string), [])
+  }))
+  default = [
+    {
+      port  = 443
+      cidrs = ["0.0.0.0/0"]
+    },
+    {
+      port  = 9090
+      cidrs = ["0.0.0.0/0"]
+    }
+  ]
+}
+
+variable "monitoring_instance_type" {
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "monitoring_ingress_rules" {
+  description = "각 포트별 ingress 접근 허용 규칙 (CIDR 또는 SG ID)"
+  type = list(object({
+    port                      = number
+    cidrs                     = optional(list(string), [])
+    source_security_group_ids = optional(list(string), [])
+  }))
+  default = [
+    {
+      port  = 443
+      cidrs = ["0.0.0.0/0"]
+    }
+  ]
+}
