@@ -58,3 +58,29 @@ variable "ingress_rules" {
     source_security_group_ids = optional(list(string), [])
   }))
 }
+
+variable "app_port" {
+  description = "EC2에서 사용하는 포트"
+  type        = number
+}
+
+variable "health_check_path" {
+  description = "헬스체크 경로"
+  type        = string
+}
+
+variable "https_listener_arn" {
+  description = "HTTPS ALB Listener ARN"
+  type        = string
+}
+
+variable "listener_rule_priority" {
+  description = "Listener Rule 우선순위"
+  type        = number
+  default     = 100
+}
+
+variable "path_patterns" {
+  description = "경로 패턴"
+  type        = list(string)
+}
