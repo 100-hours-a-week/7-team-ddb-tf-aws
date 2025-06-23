@@ -46,17 +46,22 @@ module "route53" {
 }
 
 module "jenkins_instance" {
-  source         = "./modules/ec2"
-  name_prefix    = "shared"
-  name           = "jenkins"
-  instance_type  = var.jenkins_instance_type
-  ami_id         = var.ami_id
-  subnet_id      = module.network.private_subnet_ids["cicd"]
-  vpc_id         = module.network.vpc_id
-  user_data      = filebase64("${path.module}/scripts/startup_jenkins.sh")
-  ingress_rules  = var.jenkins_ingress_rules
-  common_tags    = var.common_tags
+  source                    = "./modules/ec2"
+  name_prefix               = "shared"
+  name                      = "jenkins"
+  instance_type             = var.jenkins_instance_type
+  ami_id                    = var.ami_id
+  subnet_id                 = module.network.private_subnet_ids["cicd"]
+  vpc_id                    = module.network.vpc_id
+  user_data                 = filebase64("${path.module}/scripts/startup_jenkins.sh")
+  ingress_rules             = var.jenkins_ingress_rules
+  common_tags               = var.common_tags
   iam_instance_profile_name = module.iam_jenkins.instance_profile_name
+  app_port                  = var.jenkins_port
+  health_check_path         = var.jenkins_health_check_path
+  path_patterns             = var.jenkins_path
+  https_listener_arn        = module.loadbalancer.https_listener_arn
+  listener_rule_priority    = var.jenkins_listener_rule_priority
 }
 
 module "iam_jenkins" {
@@ -65,17 +70,22 @@ module "iam_jenkins" {
 }
 
 module "monitoring_instance" {
-  source         = "./modules/ec2"
-  name_prefix    = "shared"
-  name           = "monitoring"
-  instance_type  = var.monitoring_instance_type
-  ami_id         = var.ami_id
-  subnet_id      = module.network.private_subnet_ids["monitoring"]
-  vpc_id         = module.network.vpc_id
-  user_data      = filebase64("${path.module}/scripts/startup_monitoring.sh")
-  ingress_rules  = var.monitoring_ingress_rules
-  common_tags    = var.common_tags
+  source                    = "./modules/ec2"
+  name_prefix               = "shared"
+  name                      = "monitoring"
+  instance_type             = var.monitoring_instance_type
+  ami_id                    = var.ami_id
+  subnet_id                 = module.network.private_subnet_ids["monitoring"]
+  vpc_id                    = module.network.vpc_id
+  user_data                 = filebase64("${path.module}/scripts/startup_monitoring.sh")
+  ingress_rules             = var.monitoring_ingress_rules
+  common_tags               = var.common_tags
   iam_instance_profile_name = module.iam_monitoring.instance_profile_name
+  app_port                  = var.monitoring_port
+  health_check_path         = var.monitoring_health_check_path
+  path_patterns             = var.monitoring_path
+  https_listener_arn        = module.loadbalancer.https_listener_arn
+  listener_rule_priority    = var.monitoring_listener_rule_priority
 }
 
 module "iam_monitoring" {
