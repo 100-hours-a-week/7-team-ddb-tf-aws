@@ -16,6 +16,7 @@ resource "aws_iam_instance_profile" "fe" {
   role = aws_iam_role.fe_ssm.name
 }
 
+# Security Group for FE
 resource "aws_security_group" "fe_sg" {
   name        = "fe-sg-${var.env}"
   description = "Allow FE access"
@@ -44,7 +45,7 @@ resource "aws_security_group_rule" "fe_from_alb" {
   description              = "Allow from ALB"
 }
 
-# 추가 CIDR → FE 허용
+# shared CIDR → FE 허용
 resource "aws_security_group_rule" "fe_from_additional_cidrs" {
   for_each = toset(var.allowed_cidrs)
 
@@ -67,12 +68,23 @@ resource "aws_launch_template" "fe" {
     name = aws_iam_instance_profile.fe.name
   }
 
-  user_data = base64encode(data.template_file.startup.rendered)
+  user_data = base64encode(templatefile("${path.module}/scripts/startup.sh", {}))
 
   vpc_security_group_ids = [aws_security_group.fe_sg.id]
 
   monitoring {
     enabled = true
+  }
+
+  block_device_mappings {
+    device_name = "/dev/sda1"
+
+    ebs {
+      volume_size           = 30
+      volume_type           = "gp3"
+      delete_on_termination = true
+      encrypted             = true
+    }
   }
 
   tag_specifications {
@@ -113,7 +125,7 @@ resource "aws_autoscaling_group" "fe" {
 
   launch_template {
     id      = aws_launch_template.fe.id
-    version = "Latest"
+    version = "$Latest"
   }
 }
 
@@ -131,7 +143,7 @@ resource "aws_autoscaling_policy" "fe_request_scaling" {
     disable_scale_in = false
   }
 
-  depends_on = [aws_lb_target_group.fe]
+  depends_on = [aws_lb_target_group.fe, aws_lb_listener_rule.fe_host_rule]
 }
 
 resource "aws_lb_target_group" "fe" {

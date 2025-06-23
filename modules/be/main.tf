@@ -16,6 +16,7 @@ resource "aws_iam_instance_profile" "be" {
   role = aws_iam_role.be_ssm.name
 }
 
+# Security Group for BE
 resource "aws_security_group" "be_sg" {
   name        = "be-sg-${var.env}"
   description = "Allow BE access"
@@ -44,7 +45,7 @@ resource "aws_security_group_rule" "be_from_alb" {
   description              = "Allow from ALB"
 }
 
-# 추가 CIDR → BE 허용
+# shared CIDR → BE 허용
 resource "aws_security_group_rule" "be_from_additional_cidrs" {
   for_each = toset(var.allowed_cidrs)
 
@@ -67,12 +68,23 @@ resource "aws_launch_template" "be" {
     name = aws_iam_instance_profile.be.name
   }
 
-  user_data = base64encode(data.template_file.startup.rendered)
+  user_data = base64encode(templatefile("${path.module}/scripts/startup.sh", {}))
 
   vpc_security_group_ids = [aws_security_group.be_sg.id]
 
   monitoring {
     enabled = true
+  }
+
+  block_device_mappings {
+    device_name = "/dev/sda1"
+
+    ebs {
+      volume_size           = 30
+      volume_type           = "gp3"
+      delete_on_termination = true
+      encrypted             = true
+    }
   }
 
   tag_specifications {
@@ -115,7 +127,7 @@ resource "aws_autoscaling_group" "be" {
 
   launch_template {
     id      = aws_launch_template.be.id
-    version = "Latest"
+    version = "$Latest"
   }
 }
 
@@ -132,7 +144,7 @@ resource "aws_autoscaling_policy" "be_cpu_scaling" {
     disable_scale_in = false
   }
 
-  depends_on = [aws_lb_target_group.be]
+  depends_on = [aws_lb_target_group.be, aws_lb_listener_rule.be_host_rule]
 }
 
 resource "aws_lb_target_group" "be" {
