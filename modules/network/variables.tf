@@ -29,3 +29,8 @@ variable "env" {
   description = "환경"
   type = string
 }
+
+variable "nat_azs" {
+  description = "NAT Gateway를 배치할 AZ 목록"
+  type        = list(string)
+}

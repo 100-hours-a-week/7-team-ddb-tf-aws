@@ -18,9 +18,14 @@ variable "public_subnets" {
     map_public_ip_on_launch = bool
   }))
   default = {
-    tool = {
+    tool-a = {
       cidr                    = "10.30.1.0/24"
       az                      = "ap-northeast-2a"
+      map_public_ip_on_launch = true
+    }
+    tool-b = {
+      cidr                    = "10.30.2.0/24"
+      az                      = "ap-northeast-2c"
       map_public_ip_on_launch = true
     }
   }
@@ -58,8 +63,26 @@ variable "env" {
   default     = "shared"
 }
 
+variable "domain_name" {
+  description = "환경"
+  type        = string
+  default     = "shared.dolpin.site"
+}
+
 variable "domain_zone_name" {
   description = "환경"
   type        = string
-  default     = "dolpin.shop"
+  default     = "dolpin.site"
+}
+
+variable "domain_wildcard" {
+  description = "도메인 인증서 와일드 카드"
+  type        = string
+  default     = "*.shared.dolpin.site"
+}
+
+variable "nat_azs" {
+  description = "NAT Gateway를 배치할 AZ 목록"
+  type        = list(string)
+  default     = ["ap-northeast-2a"]
 }

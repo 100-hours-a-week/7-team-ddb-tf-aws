@@ -14,6 +14,7 @@ terraform {
     use_lockfile = true
   }
 }
+
 # AWS Provider
 provider "aws" {
   region = var.aws_region
@@ -26,6 +27,42 @@ module "network" {
   private_subnets = var.private_subnets
   common_tags     = var.common_tags
   env             = var.env
+  nat_azs         = var.nat_azs
+}
+
+module "shared_to_prod_peering" {
+  source = "../../modules/vpc_peering"
+
+  env                        = var.env
+  component                  = "shared-to-prod"
+  requester_vpc_id           = data.terraform_remote_state.shared.outputs.vpc_id
+  accepter_vpc_id            = module.network.vpc_id
+  requester_vpc_cidr         = data.terraform_remote_state.shared.outputs.vpc_cidr
+  accepter_vpc_cidr          = var.vpc_cidr
+  requester_route_table_ids = {
+    "ap-northeast-2a" = data.terraform_remote_state.shared.outputs.private_route_table_ids["ap-northeast-2a"]
+  }
+  accepter_route_table_ids  = module.network.private_route_table_ids
+}
+    
+module "ecr_backend" {
+  source = "../../modules/ecr"
+
+  env                     = var.env
+  name                    = var.be_ecr_name
+  image_tag_mutability    = var.image_tag_mutability
+  scan_on_push            = var.scan_on_push
+  encryption_type         = var.encryption_type
+}
+
+module "ecr_frontend" {
+  source = "../../modules/ecr"
+
+  env                     = var.env
+  name                    = var.fe_ecr_name
+  image_tag_mutability    = var.image_tag_mutability
+  scan_on_push            = var.scan_on_push
+  encryption_type         = var.encryption_type
 }
 
 module "loadbalancer" {
@@ -36,26 +73,24 @@ module "loadbalancer" {
   common_tags       = var.common_tags
   env               = var.env
 }
-
+        
 module "route53" {
   source = "../../modules/route53"
   domain_zone_name = var.domain_zone_name
-  domains_alias = [
-    {
-      name = var.fe_alias_name
-      type = var.alias_type
-      alias_name = module.loadbalancer.alb_dns_name
+  domains_alias = {
+    "${var.fe_alias_name}" = {
+      domain_name   = var.fe_alias_name
+      alias_name    = module.loadbalancer.alb_dns_name
       alias_zone_id = module.loadbalancer.alb_zone_id
     },
-    {
-      name = var.be_alias_name
-      type = var.alias_type
-      alias_name = module.loadbalancer.alb_dns_name
+    "${var.be_alias_name}" = {
+      domain_name   = var.be_alias_name
+      alias_name    = module.loadbalancer.alb_dns_name
       alias_zone_id = module.loadbalancer.alb_zone_id
     }
-  ]
-  domains_records = []
-}
+  }
+  domains_records = {}
+}        
 
 module "rds" {
   source = "../../modules/rds"
@@ -109,4 +144,24 @@ module "be" {
   target_cpu_utilization   = var.be_target_cpu_utilization
   health_check_path        = var.be_health_check_path
   allowed_cidrs            = var.be_allowed_cidrs
+}
+
+module "acm_seoul" {
+  providers                 = { aws = aws.seoul }
+  source                    = "../../modules/acm"
+  common_tags               = var.common_tags
+  env                       = var.env
+  domain_zone_name          = var.domain_zone_name
+  domain_name               = var.domain_name
+  subject_alternative_names = [var.domain_wildcard]
+}
+
+module "acm_nova" {
+  providers                 = { aws = aws.nova }
+  source                    = "../../modules/acm"
+  common_tags               = var.common_tags
+  env                       = var.env
+  domain_zone_name          = var.domain_zone_name
+  domain_name               = var.domain_name
+  subject_alternative_names = [var.domain_wildcard]
 }

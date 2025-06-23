@@ -80,11 +80,53 @@ variable "env" {
   default     = "prod"
 }
 
+### ECR
+variable "be_ecr_name" {
+  description = "Backend ECR 리포지토리 이름"
+  type        = string
+  default     = "dolpin-backend"
+}
+
+variable "fe_ecr_name" {
+  description = "Frontend ECR 리포지토리 이름"
+  type        = string
+  default     = "dolpin-frontend"
+}
+
+variable "image_tag_mutability" {
+  description = "태그 변경 가능 여부"
+  type        = string
+  default     = "IMMUTABLE"
+}
+
+variable "scan_on_push" {
+  description = "푸시 시 이미지 자동 보안 스캔 여부"
+  type        = bool
+  default     = true
+}
+
+variable "encryption_type" {
+  description = "암호화 방식"
+  type        = string
+  default     = "AES256"
+}
 
 variable "domain_zone_name" {
   description = "환경"
   type        = string
-  default     = "dolpin.shop"
+  default     = "dolpin.site"
+}
+
+variable "domain_name" {
+  description = "환경"
+  type        = string
+  default     = "dolpin.site"
+}
+
+variable "domain_wildcard" {
+  description = "도메인 인증서 와일드 카드"
+  type        = string
+  default     = "*.dolpin.site"
 }
 
 variable "fe_alias_name" {
@@ -97,12 +139,6 @@ variable "be_alias_name" {
   description = "BE 도메인의 Route53 ALIAS 레코드 이름"
   type        = string
   default     = "be.dolpin.site"
-}
-
-variable "alias_type" {
-  description = "ALIAS 레코드의 타입 (예: A, AAAA)"
-  type        = string
-  default     = "A"
 }
 
 variable "db_engine" {
@@ -225,4 +261,10 @@ variable "be_allowed_cidrs" {
   description = "BE 인스턴스로의 접근을 허용할 CIDR 리스트"
   type        = list(string)
   default     = ["10.30.0.0/16"]
+}
+
+variable "nat_azs" {
+  description = "NAT Gateway를 배치할 AZ 목록"
+  type        = list(string)
+  default     = ["ap-northeast-2a", "ap-northeast-2c"]
 }
