@@ -39,3 +39,18 @@ variable "root_volume_size" {
   description = "Root volume size in GB"
   default     = 30
 }
+
+variable "name_prefix" {
+  description = "리소스 이름에 사용할 접두사"
+  type        = string
+}
+
+variable "allowed_ports" {
+  description = "허용할 TCP 포트 번호 목록"
+  type        = list(number)
+}
+
+variable "allowed_cidrs" {
+  description = "Ingress 트래픽을 허용할 CIDR 블록 목록"
+  type        = list(string)
+}
