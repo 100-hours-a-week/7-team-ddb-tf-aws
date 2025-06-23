@@ -65,7 +65,7 @@ resource "aws_launch_template" "this" {
     name = aws_iam_instance_profile.this.name
   }
 
-  user_data = base64encode(templatefile("${path.module}/scripts/startup-${var.component}.sh", {}))
+  user_data = base64encode(templatefile("${path.module}/scripts/startup.sh", {}))
 
   vpc_security_group_ids = [aws_security_group.this.id]
 

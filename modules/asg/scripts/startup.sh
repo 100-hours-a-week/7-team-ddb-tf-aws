@@ -5,11 +5,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 echo "▶ 시스템 패키지 업데이트"
 sudo apt-get update -y
-sudo apt-get install -y curl ca-certificates gnupg lsb-release apt-transport-https software-properties-common
-apt upgrade -y
-
-echo "▶ OpenJDK 17 설치"
-apt install -y openjdk-17-jdk
+sudo apt-get install -y curl ca-certificates gnupg lsb-release
 
 echo "▶ Docker 설치"
 sudo install -m 0755 -d /etc/apt/keyrings
