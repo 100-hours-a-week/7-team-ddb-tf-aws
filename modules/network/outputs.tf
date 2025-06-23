@@ -9,8 +9,10 @@ output "public_subnet_ids" {
 }
 
 output "private_subnet_ids" {
-  description = "private subnet ID 리스트"
-  value       = [for s in aws_subnet.private : s.id]
+  description = "이름 기반 private subnet ID"
+  value = {
+    for name, subnet in aws_subnet.private : name => subnet.id
+  }
 }
 
 output "db_subnet_ids" {
