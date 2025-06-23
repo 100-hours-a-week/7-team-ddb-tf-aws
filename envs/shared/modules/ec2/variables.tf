@@ -45,12 +45,11 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "allowed_ports" {
-  description = "허용할 TCP 포트 번호 목록"
-  type        = list(number)
-}
-
-variable "allowed_cidrs" {
-  description = "Ingress 트래픽을 허용할 CIDR 블록 목록"
-  type        = list(string)
+variable "ingress_rules" {
+  description = "각 포트별 ingress 접근 허용 규칙 (CIDR 또는 SG ID)"
+  type = list(object({
+    port                    = number
+    cidrs                   = optional(list(string), [])
+    source_security_group_ids = optional(list(string), [])
+  }))
 }

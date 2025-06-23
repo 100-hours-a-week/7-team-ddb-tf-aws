@@ -18,13 +18,40 @@ resource "aws_security_group" "this" {
   description = "Security Group for ${var.name}"
   vpc_id      = var.vpc_id
 
+  # CIDR 기반 ingress
   dynamic "ingress" {
-    for_each = var.allowed_ports
+    for_each = flatten([
+      for rule in var.ingress_rules : [
+        for cidr in rule.cidrs : {
+          port = rule.port
+          cidr = cidr
+        }
+      ]
+    ])
     content {
-      from_port   = ingress.value
-      to_port     = ingress.value
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
       protocol    = "tcp"
-      cidr_blocks = var.allowed_cidrs
+      cidr_blocks = [ingress.value.cidr]
+    }
+  }
+
+  # 보안 그룹 기반 ingress
+  dynamic "ingress" {
+    for_each = flatten([
+      for rule in var.ingress_rules : [
+        for sg_id in rule.source_security_group_ids : {
+          port = rule.port
+          sg   = sg_id
+        }
+      ]
+    ])
+    content {
+      from_port                = ingress.value.port
+      to_port                  = ingress.value.port
+      protocol                 = "tcp"
+      security_groups          = [ingress.value.sg]
+      description              = "Allow SG access on port ${ingress.value.port}"
     }
   }
 
