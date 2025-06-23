@@ -42,9 +42,7 @@ module "shared_to_dev_peering" {
   requester_route_table_ids = {
     default = data.terraform_remote_state.shared.outputs.private_route_table_ids["ap-northeast-2a"]
   }
-  accepter_route_table_ids = {
-    default = module.network.private_route_table_ids["ap-northeast-2a"]
-  }
+  accepter_route_table_ids  = module.network.private_route_table_ids
 }
 
 module "ecr_backend" {
@@ -71,7 +69,7 @@ module "loadbalancer" {
   source            = "../../modules/loadbalancer"
   vpc_id            = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
-  cert_arn          = ""
+  cert_arn          = module.acm_seoul.cert_arn
   common_tags       = var.common_tags
   env               = var.env
 }
@@ -95,4 +93,25 @@ module "rds" {
   db_engine_version     = var.db_engine_version
   db_instance_class     = var.db_instance_class
   db_multi_az           = var.db_multi_az
+}
+
+module "acm_seoul" {
+  providers                 = { aws = aws.seoul }
+  source                    = "../../modules/acm"
+  common_tags               = var.common_tags
+  env                       = var.env
+  domain_zone_name          = var.domain_zone_name
+  domain_name               = var.domain_name
+  subject_alternative_names = [var.domain_wildcard]
+}
+
+
+module "acm_nova" {
+  providers                 = { aws = aws.nova }
+  source                    = "../../modules/acm"
+  common_tags               = var.common_tags
+  env                       = var.env
+  domain_zone_name          = var.domain_zone_name
+  domain_name               = var.domain_name
+  subject_alternative_names = [var.domain_wildcard]
 }
