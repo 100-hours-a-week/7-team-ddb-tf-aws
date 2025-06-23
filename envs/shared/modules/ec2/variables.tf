@@ -45,6 +45,11 @@ variable "name_prefix" {
   type        = string
 }
 
+variable "iam_instance_profile_name" {
+  description = "IAM instance profile 이름"
+  type        = string
+}
+
 variable "ingress_rules" {
   description = "각 포트별 ingress 접근 허용 규칙 (CIDR 또는 SG ID)"
   type = list(object({

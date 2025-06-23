@@ -1,18 +1,3 @@
-resource "aws_iam_role" "this" {
-  name               = "${var.name}-ssm-role"
-  assume_role_policy = file("${path.module}/policy/ssm_instance_assume_role.json")
-}
-
-resource "aws_iam_role_policy_attachment" "ssm" {
-  role       = aws_iam_role.this.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_instance_profile" "this" {
-  name = "${var.name}-instance-profile"
-  role = aws_iam_role.this.name
-}
-
 resource "aws_security_group" "this" {
   name        = "${var.name_prefix}-${var.name}-sg"
   description = "Security Group for ${var.name}"
@@ -73,7 +58,7 @@ resource "aws_instance" "this" {
   subnet_id              = var.subnet_id
   associate_public_ip_address = false
   vpc_security_group_ids = [aws_security_group.this.id]
-  iam_instance_profile   = aws_iam_instance_profile.this.name
+  iam_instance_profile   = var.iam_instance_profile_name
   key_name               = null
 
   root_block_device {
