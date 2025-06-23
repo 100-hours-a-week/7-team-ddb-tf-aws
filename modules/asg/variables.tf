@@ -1,3 +1,8 @@
+variable "component" {
+  description = "컴포넌트 이름 (예: fe, be)"
+  type        = string
+}
+
 variable "env" {
   description = "환경 이름 (예: dev, prod)"
   type        = string
@@ -8,8 +13,8 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "be_port" {
-  description = "BE 애플리케이션 포트"
+variable "port" {
+  description = "서비스 포트"
   type        = number
 }
 
@@ -25,7 +30,7 @@ variable "allowed_cidrs" {
 }
 
 variable "common_tags" {
-  description = "기본 태그"
+  description = "공통 태그"
   type        = map(string)
   default     = {}
 }
@@ -41,7 +46,7 @@ variable "instance_type" {
 }
 
 variable "subnet_ids" {
-  description = "BE가 배치될 서브넷 리스트"
+  description = "EC2가 배치될 서브넷 리스트"
   type        = list(string)
 }
 
@@ -50,14 +55,8 @@ variable "alb_arn_suffix" {
   type        = string
 }
 
-variable "target_cpu_utilization" {
-  description = "목표 CPU 사용률 (%)"
-  type        = number
-  default     = 60
-}
-
 variable "health_check_path" {
-  description = "ALB에서 BE로 보낼 헬스 체크 HTTP 경로"
+  description = "ALB에서 보낼 헬스 체크 HTTP 경로"
   type        = string
 }
 
@@ -74,4 +73,16 @@ variable "listener_rule_priority" {
 variable "host_header_values" {
   description = "ALB Listener Rule 조건에 사용할 host_header 값 리스트"
   type        = list(string)
+}
+
+variable "target_cpu_utilization" {
+  description = "CPU 기반 오토스케일링 사용 시 목표 CPU 사용률 (%)"
+  type        = number
+  default     = null
+}
+
+variable "request_per_target_threshold" {
+  description = "ALB 요청 수 기반 오토스케일링 사용 시 Target당 요청 수"
+  type        = number
+  default     = null
 }
