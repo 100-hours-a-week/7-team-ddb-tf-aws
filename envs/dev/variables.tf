@@ -85,12 +85,6 @@ variable "be_alias_name" {
   default     = "be.dev.dolpin.site"
 }
 
-variable "alias_type" {
-  description = "ALIAS 레코드의 타입 (예: A, AAAA)"
-  type        = string
-  default     = "A"
-}
-
 variable "db_engine" {
   description = "database engine 종류 (ex: mysql, postgres 등)"
   type = string

@@ -40,21 +40,19 @@ module "loadbalancer" {
 module "route53" {
   source = "../../modules/route53"
   domain_zone_name = var.domain_zone_name
-  domains_alias = [
-    {
-      name = var.fe_alias_name
-      type = var.alias_type
-      alias_name = module.loadbalancer.alb_dns_name
+  domains_alias = {
+    "${var.fe_alias_name}" = {
+      domain_name   = var.fe_alias_name
+      alias_name    = module.loadbalancer.alb_dns_name
       alias_zone_id = module.loadbalancer.alb_zone_id
     },
-    {
-      name = var.be_alias_name
-      type = var.alias_type
-      alias_name = module.loadbalancer.alb_dns_name
+    "${var.be_alias_name}" = {
+      domain_name   = var.be_alias_name
+      alias_name    = module.loadbalancer.alb_dns_name
       alias_zone_id = module.loadbalancer.alb_zone_id
     }
-  ]
-  domains_records = []
+  }
+  domains_records = {}
 }
 
 module "rds" {
