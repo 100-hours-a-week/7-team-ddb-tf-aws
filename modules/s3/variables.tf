@@ -8,6 +8,16 @@ variable "bucket_name" {
   type        = string
 }
 
+variable "domain_name" {
+  description = "CloudFront 도메인 (Route 53 또는 외부 도메인)"
+  type        = string
+}
+
+variable "acm_certificate_arn" {
+  description = "CloudFront에서 사용할 ACM 인증서 ARN (us-east-1 리전)"
+  type        = string
+}
+
 variable "common_tags" {
   description = "기본 태그"
   type        = map(string)

@@ -59,3 +59,58 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
     }
   }
 }
+
+# OAC
+resource "aws_cloudfront_origin_access_control" "this" {
+  name                              = "${var.bucket_name}-oac"
+  origin_access_control_origin_type = "s3"      
+  signing_behavior                  = "always" 
+  signing_protocol                  = "sigv4"   
+}
+
+# 이미지 파일에 대한 CDN 경로를 생성
+resource "aws_cloudfront_distribution" "this" {
+  origin {
+    domain_name = aws_s3_bucket.this.bucket_regional_domain_name
+    origin_id   = "S3-${aws_s3_bucket.this.id}"
+    origin_access_control_id = aws_cloudfront_origin_access_control.this.id
+  }
+
+  enabled             = true
+  is_ipv6_enabled     = true
+
+  default_cache_behavior {
+    target_origin_id       = "S3-${aws_s3_bucket.this.id}"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    cache_policy_id            = aws_cloudfront_cache_policy.image_cdn_cache.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cors.id
+    compress = true
+
+    min_ttl     = 0
+    default_ttl = 3600
+    max_ttl     = 86400
+  }
+
+  price_class = "PriceClass_200"
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = var.acm_certificate_arn   
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+    cloudfront_default_certificate = false
+  }
+
+  aliases = [var.domain_name] 
+
+  tags = merge(var.common_tags, {
+    Name = "cdn-${var.bucket_name}"
+  })
+}
