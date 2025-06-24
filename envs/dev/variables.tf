@@ -122,11 +122,13 @@ variable "domain_name" {
   type        = string
   default     = "dev.dolpin.site"
 }
+
 variable "domain_wildcard" {
   description = "도메인 인증서 와일드 카드"
   type        = string
   default     = "*.dev.dolpin.site"
 }
+
 variable "db_engine" {
   description = "database engine 종류 (ex: mysql, postgres 등)"
   type = string
@@ -150,8 +152,28 @@ variable "db_multi_az" {
   type = bool
   default = false
 }
+
 variable "nat_azs" {
   description = "NAT Gateway를 배치할 AZ 목록"
   type        = list(string)
   default     = ["ap-northeast-2a"]
+}
+
+### s3
+variable "bucket_name" {
+  description = "S3 버킷 이름"
+  type        = string
+  default     = "s3-dolpin-image-dev"
+}
+
+variable "cdn_domain_name" {
+  description = "CloudFront용 도메인"
+  type        = string
+  default     = "cdn.dev.dolpin.site"
+}
+
+variable "cors_origins" {
+  description = "CORS 허용 origin 리스트"
+  type        = list(string)
+  default     = ["https://fe.dev.dolpin.site"]
 }
