@@ -129,6 +129,18 @@ variable "domain_wildcard" {
   default     = "*.dolpin.site"
 }
 
+variable "fe_alias_name" {
+  description = "FE 도메인의 Route53 ALIAS 레코드 이름"
+  type        = string
+  default     = "dolpin.site"
+}
+
+variable "be_alias_name" {
+  description = "BE 도메인의 Route53 ALIAS 레코드 이름"
+  type        = string
+  default     = "be.dolpin.site"
+}
+
 variable "db_engine" {
   description = "database engine 종류 (ex: mysql, postgres 등)"
   type = string
@@ -151,6 +163,104 @@ variable "db_multi_az" {
   description = "db가 multi az 지원 여부"
   type = bool
   default = true
+}
+
+# FE
+variable "fe_port" {
+  description = "FE 애플리케이션 포트"
+  type        = number
+  default     = 3000
+}
+
+variable "fe_ami_id" {
+  description = "FE 인스턴스에 사용할 AMI ID"
+  type        = string
+  default     = "ami-08943a151bd468f4e"
+}
+
+variable "fe_instance_type" {
+  description = "FE 인스턴스 타입"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "fe_listener_rule_priority" {
+  description = "FE ALB Listener Rule 우선순위"
+  type        = number
+  default     = 90
+}
+
+variable "fe_host_header_values" {
+  description = "FE ALB Listener Rule 조건에 사용할 host_header 값 리스트"
+  type        = list(string)
+  default     = ["dolpin.site"]
+}
+
+variable "fe_request_per_target_threshold" {
+  description = "FE 오토스케일링: Target 당 요청 수 임계값"
+  type        = number
+  default     = 60
+}
+
+variable "fe_health_check_path" {
+  description = "FE ALB 헬스 체크 경로"
+  type        = string
+  default     = "/api/health"
+}
+
+variable "fe_allowed_cidrs" {
+  description = "FE 인스턴스로의 접근을 허용할 CIDR 리스트"
+  type        = list(string)
+  default     = ["10.30.0.0/16"]
+}
+
+# BE
+variable "be_port" {
+  description = "BE 애플리케이션 포트"
+  type        = number
+  default     = 8080
+}
+
+variable "be_ami_id" {
+  description = "BE 인스턴스에 사용할 AMI ID"
+  type        = string
+  default     = "ami-08943a151bd468f4e"
+}
+
+variable "be_instance_type" {
+  description = "BE 인스턴스 타입"
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "be_listener_rule_priority" {
+  description = "BE ALB Listener Rule 우선순위"
+  type        = number
+  default     = 100
+}
+
+variable "be_host_header_values" {
+  description = "BE ALB Listener Rule 조건에 사용할 host_header 값 리스트"
+  type        = list(string)
+  default     = ["be.dolpin.site"]
+}
+
+variable "be_target_cpu_utilization" {
+  description = "BE 오토스케일링: 목표 CPU 사용률"
+  type        = number
+  default     = 70
+}
+
+variable "be_health_check_path" {
+  description = "BE ALB 헬스 체크 경로"
+  type        = string
+  default     = "/api/v1/health"
+}
+
+variable "be_allowed_cidrs" {
+  description = "BE 인스턴스로의 접근을 허용할 CIDR 리스트"
+  type        = list(string)
+  default     = ["10.30.0.0/16"]
 }
 
 variable "nat_azs" {
