@@ -172,7 +172,7 @@ module "acm_nova" {
 }
 
 module "s3" {
-  source = "../../modules/s3"
+  source = "../../modules/s3_cloudfront"
   env                  = var.env
   bucket_name          = var.bucket_name
   domain_name          = var.cdn_domain_name
