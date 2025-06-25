@@ -268,3 +268,22 @@ variable "nat_azs" {
   type        = list(string)
   default     = ["ap-northeast-2a", "ap-northeast-2c"]
 }
+
+### s3
+variable "bucket_name" {
+  description = "S3 버킷 이름"
+  type        = string
+  default     = "s3-dolpin-image-prod"
+}
+
+variable "cdn_domain_name" {
+  description = "CloudFront에 연결할 도메인"
+  type        = string
+  default     = "cdn.dolpin.site"
+}
+
+variable "cors_origins" {
+  description = "CORS 허용 origin 리스트"
+  type        = list(string)
+  default     = ["https://dolpin.site"]
+}

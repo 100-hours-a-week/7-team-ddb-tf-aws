@@ -78,6 +78,11 @@ module "route53" {
   source = "../../modules/route53"
   domain_zone_name = var.domain_zone_name
   domains_alias = {
+    cdn = {
+      domain_name   = var.cdn_domain_name
+      alias_name    = module.s3.cloudfront_domain_name
+      alias_zone_id = module.s3.cloudfront_zone_id
+    },
     "${var.fe_alias_name}" = {
       domain_name   = var.fe_alias_name
       alias_name    = module.loadbalancer.alb_dns_name
@@ -164,4 +169,14 @@ module "acm_nova" {
   domain_zone_name          = var.domain_zone_name
   domain_name               = var.domain_name
   subject_alternative_names = [var.domain_wildcard]
+}
+
+module "s3" {
+  source = "../../modules/s3"
+  env                  = var.env
+  bucket_name          = var.bucket_name
+  domain_name          = var.cdn_domain_name
+  acm_certificate_arn  = module.acm_nova.cert_arn
+  common_tags          = var.common_tags
+  cors_origins         = var.cors_origins
 }
