@@ -2,7 +2,6 @@ FROM jenkins/jenkins:lts-jdk17
 
 USER root
 
-# 기본 유틸 설치
 RUN apt-get update && apt-get install -y \
     curl unzip git ca-certificates gnupg lsb-release sudo apt-transport-https
 
@@ -26,7 +25,7 @@ RUN curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/
 
 RUN /usr/local/bin/aws --version || echo "AWS CLI 설치 실패"
 
-# Jenkins 사용자에게 docker 사용 권한 부여
-RUN groupadd docker && usermod -aG docker jenkins
-
+# 호스트 docker 그룹 GID에 맞춰 docker 그룹 생성 및 jenkins에 부여
+ARG DOCKER_GID_PLACEHOLDER
+RUN groupadd -g DOCKER_GID_PLACEHOLDER docker && usermod -aG docker jenkins
 USER jenkins

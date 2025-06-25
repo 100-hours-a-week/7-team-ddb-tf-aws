@@ -65,7 +65,15 @@ while [ -f /tmp/restore.lock ]; do
   sleep 1
 done
 
-echo "${dockerfile_content}" > /tmp/Dockerfile
+if getent group docker > /dev/null 2>&1; then
+  DOCKER_GID=$(getent group docker | cut -d: -f3 || echo 999)
+else
+  sudo groupadd docker
+  DOCKER_GID=$(getent group docker | cut -d: -f3 || echo 999)
+fi
+export DOCKER_GID
+
+echo "${dockerfile_content}" | sed "s|DOCKER_GID_PLACEHOLDER|$${DOCKER_GID}|g" > /tmp/Dockerfile
 echo "${dockercompose_content}" > /tmp/docker-compose.yml
 cd /tmp
 sudo docker compose up -d
