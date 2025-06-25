@@ -73,7 +73,7 @@ module "loadbalancer" {
   common_tags       = var.common_tags
   env               = var.env
 }
-
+        
 module "route53" {
   source = "../../modules/route53"
   domain_zone_name = var.domain_zone_name
@@ -82,10 +82,20 @@ module "route53" {
       domain_name   = var.cdn_domain_name
       alias_name    = module.s3.cloudfront_domain_name
       alias_zone_id = module.s3.cloudfront_zone_id
+    },
+    "${var.fe_alias_name}" = {
+      domain_name   = var.fe_alias_name
+      alias_name    = module.loadbalancer.alb_dns_name
+      alias_zone_id = module.loadbalancer.alb_zone_id
+    },
+    "${var.be_alias_name}" = {
+      domain_name   = var.be_alias_name
+      alias_name    = module.loadbalancer.alb_dns_name
+      alias_zone_id = module.loadbalancer.alb_zone_id
     }
   }
   domains_records = {}
-}
+}        
 
 module "rds" {
   source = "../../modules/rds"
@@ -99,6 +109,46 @@ module "rds" {
   db_engine_version     = var.db_engine_version
   db_instance_class     = var.db_instance_class
   db_multi_az           = var.db_multi_az
+}
+
+module "fe" {
+  source                       = "../../modules/asg"
+  component                    = "fe"
+  env                          = var.env
+  vpc_id                       = module.network.vpc_id
+  port                         = var.fe_port
+  subnet_ids                   = local.fe_subnet_ids
+  ami_id                       = var.fe_ami_id
+  instance_type                = var.fe_instance_type
+  common_tags                  = var.common_tags
+  alb_security_group_id        = module.loadbalancer.alb_sg_id
+  alb_listener_arn_https       = module.loadbalancer.https_listener_arn
+  alb_arn_suffix               = module.loadbalancer.alb_arn_suffix
+  listener_rule_priority       = var.fe_listener_rule_priority
+  host_header_values           = var.fe_host_header_values
+  request_per_target_threshold = var.fe_request_per_target_threshold
+  health_check_path            = var.fe_health_check_path
+  allowed_cidrs                = var.fe_allowed_cidrs
+}
+
+module "be" {
+  source                   = "../../modules/asg"
+  component                = "be"
+  env                      = var.env
+  vpc_id                   = module.network.vpc_id
+  port                     = var.be_port
+  subnet_ids               = local.be_subnet_ids
+  ami_id                   = var.be_ami_id
+  instance_type            = var.be_instance_type
+  common_tags              = var.common_tags
+  alb_security_group_id    = module.loadbalancer.alb_sg_id
+  alb_listener_arn_https   = module.loadbalancer.https_listener_arn
+  alb_arn_suffix           = module.loadbalancer.alb_arn_suffix
+  listener_rule_priority   = var.be_listener_rule_priority
+  host_header_values       = var.be_host_header_values
+  target_cpu_utilization   = var.be_target_cpu_utilization
+  health_check_path        = var.be_health_check_path
+  allowed_cidrs            = var.be_allowed_cidrs
 }
 
 module "acm_seoul" {
