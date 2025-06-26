@@ -38,3 +38,8 @@ variable "green_target_group_name" {
   description = "green target group 이름"
   type        = string
 }
+
+variable "enable_blue_green" {
+  description = "Blue/Green 배포 여부"
+  type        = bool
+}

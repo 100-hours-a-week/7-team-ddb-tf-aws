@@ -21,6 +21,8 @@ resource "aws_codedeploy_app" "this" {
   })
 }
 
+# enable_blue_green = true	: BLUE_GREEN + WITH_TRAFFIC_CONTROL + LB 설정
+# enable_blue_green = false	: IN_PLACE + WITHOUT_TRAFFIC_CONTROL
 resource "aws_codedeploy_deployment_group" "this" {
   app_name              = aws_codedeploy_app.this.name
   deployment_group_name = "${var.name_prefix}-deployment-group"
@@ -36,38 +38,55 @@ resource "aws_codedeploy_deployment_group" "this" {
     }
   }
 
-  load_balancer_info {
-    target_group_pair_info {
-      target_group {
-        name = var.blue_target_group_name
-      }
-      target_group {
-        name = var.green_target_group_name
-      }
+  dynamic "load_balancer_info" {
+    for_each = var.enable_blue_green ? [1] : []
+    content {
+      target_group_pair_info {
+        target_group {
+          name = var.blue_target_group_name
+        }
+        target_group {
+          name = var.green_target_group_name
+        }
 
-      prod_traffic_route {
-        listener_arns = [var.alb_listener_arn]
+        prod_traffic_route {
+          listener_arns = [var.alb_listener_arn]
+        }
       }
     }
   }
 
-  deployment_style {
-    deployment_option = "WITH_TRAFFIC_CONTROL"
-    deployment_type   = "BLUE_GREEN"
+  dynamic "deployment_style" {
+    for_each = var.enable_blue_green ? [1] : []
+    content {
+      deployment_option = "WITH_TRAFFIC_CONTROL"
+      deployment_type   = "BLUE_GREEN"
+    }
   }
 
-  blue_green_deployment_config {
-    deployment_ready_option {
-      action_on_timeout = "CONTINUE_DEPLOYMENT"
-    }
+ dynamic "blue_green_deployment_config" {
+    for_each = var.enable_blue_green ? [1] : []
+    content {
+      deployment_ready_option {
+        action_on_timeout = "CONTINUE_DEPLOYMENT"
+      }
 
-    green_fleet_provisioning_option {
-      action = "COPY_AUTO_SCALING_GROUP"
-    }
+      green_fleet_provisioning_option {
+        action = "COPY_AUTO_SCALING_GROUP"
+      }
 
-    terminate_blue_instances_on_deployment_success {
-      action                           = "TERMINATE"
-      termination_wait_time_in_minutes = 5
+      terminate_blue_instances_on_deployment_success {
+        action                           = "TERMINATE"
+        termination_wait_time_in_minutes = 5
+      }
+    }
+  }
+
+  dynamic "deployment_style" {
+    for_each = var.enable_blue_green ? [] : [1]
+    content {
+      deployment_option = "WITHOUT_TRAFFIC_CONTROL"
+      deployment_type   = "IN_PLACE"
     }
   }
 
@@ -77,7 +96,7 @@ resource "aws_codedeploy_deployment_group" "this" {
   }
 
   lifecycle {
-    ignore_changes = [blue_green_deployment_config.green_fleet_provisioning_option]
+    ignore_changes = [blue_green_deployment_config[0].green_fleet_provisioning_option]
   }
 
   tags = merge(var.common_tags, {
