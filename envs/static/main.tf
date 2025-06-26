@@ -26,3 +26,11 @@ module "acm_validation" {
   domain_name               = "boamoa.shop"
   subject_alternative_names = ["*.boamoa.shop", "*.dev.boamoa.shop"]
 }
+
+module "cost_report" {
+  source                   = "./modules/cost_report"
+  schedule_expression_cron = "cron(0 9 * * ? *)"
+  common_tags              = var.common_tags
+  env                      = var.env
+  component                = "cr"
+}
