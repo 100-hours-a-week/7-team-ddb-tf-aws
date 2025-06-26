@@ -92,3 +92,50 @@ resource "aws_lambda_function" "cost_report_lambda" {
     Name = "${var.component}-lbd-${var.env}"
   })
 }
+
+# 스케줄러용 IAM 역할
+resource "aws_iam_role" "scheduler_invoke_lambda_role" {
+  name = "scheduler-invoke-lambda-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "scheduler.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+  tags = merge(var.common_tags, {
+    Name = "${var.component}-sch-role-${var.env}"
+  })
+}
+
+resource "aws_iam_role_policy" "scheduler_lambda_invoke_policy" {
+  role = aws_iam_role.scheduler_invoke_lambda_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect   = "Allow",
+      Action   = "lambda:InvokeFunction",
+      Resource = aws_lambda_function.cost_report_lambda.arn
+    }]
+  })
+}
+
+# 스케줄러 설정 
+resource "aws_scheduler_schedule" "cost_report_scheduler" {
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression          = var.schedule_expression_cron
+  schedule_expression_timezone = "Asia/Seoul"
+
+  target {
+    arn      = aws_lambda_function.cost_report_lambda.arn
+    role_arn = aws_iam_role.scheduler_invoke_lambda_role.arn
+  }
+}
