@@ -3,7 +3,7 @@ FROM jenkins/jenkins:lts-jdk17
 USER root
 
 RUN apt-get update && apt-get install -y \
-    curl unzip git ca-certificates gnupg lsb-release sudo apt-transport-https
+    curl unzip zip git ca-certificates gnupg lsb-release sudo apt-transport-https
 
 # Docker CLI 설치 (Ubuntu 22.04 기준)
 RUN install -m 0755 -d /etc/apt/keyrings && \
