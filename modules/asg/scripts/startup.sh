@@ -35,4 +35,20 @@ echo "▶ SSM Agent 시작 및 부팅 시 자동 시작 설정"
 sudo systemctl enable amazon-ssm-agent
 sudo systemctl start amazon-ssm-agent
 
+echo "▶ CodeDeploy Agent 설치"
+cd /home/ubuntu
+sudo apt-get update
+sudo apt-get install -y ruby wget
+wget https://aws-codedeploy-ap-northeast-2.s3.amazonaws.com/latest/install
+chmod +x ./install
+sudo ./install auto
+sudo service codedeploy-agent start
+sudo service codedeploy-agent status
+
+echo "▶ AWS CLI 2 설치"
+curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip -q awscliv2.zip
+  sudo ./aws/install
+  rm -rf aws awscliv2.zip
+
 echo "✅ startup.sh 완료"
