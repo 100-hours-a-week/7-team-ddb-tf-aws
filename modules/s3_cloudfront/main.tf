@@ -23,7 +23,7 @@ resource "aws_s3_bucket_public_access_block" "this" {
 
   block_public_acls       = true
   ignore_public_acls      = true
-  block_public_policy     = true
+  block_public_policy     = false
   restrict_public_buckets = true
 }
 
@@ -149,7 +149,7 @@ resource "aws_cloudfront_response_headers_policy" "cors" {
       items = ["*"]
     }
     access_control_allow_methods {
-      items = ["GET", "HEAD", "OPTIONS"]
+      items = ["GET", "HEAD", "OPTIONS", "PUT"]
     }
     access_control_allow_origins {
       items = var.cors_origins
@@ -162,11 +162,11 @@ data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket_policy" "allow_cf" {
   bucket = aws_s3_bucket.this.id
-  policy = data.aws_iam_policy_document.allow_cf.json
+  policy = data.aws_iam_policy_document.allow_combined.json
 }
 
 # S3와 CloudFront 연결 위한 리소스
-data "aws_iam_policy_document" "allow_cf" {
+data "aws_iam_policy_document" "allow_combined" {
   statement {
     sid     = "AllowCloudFrontOAC"
     effect  = "Allow"
@@ -183,6 +183,24 @@ data "aws_iam_policy_document" "allow_cf" {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
       values   = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.this.id}"]
+    }
+  }
+
+  statement {
+    sid     = "AllowPresignedUpload"
+    effect  = "Allow"
+    actions = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.this.arn}/*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
+      values   = ["bucket-owner-full-control"]
     }
   }
 }
