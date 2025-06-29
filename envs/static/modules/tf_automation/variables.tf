@@ -12,3 +12,12 @@ variable "component" {
   description = "컴포넌트 이름"
   type        = string
 }
+
+variable "lambda_schedules" {
+  type = map(object({
+    schedule_expression          = string
+    action                       = string
+    env                          = string
+  }))
+  description = "환경별 Scheduler 설정"
+}
