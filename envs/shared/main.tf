@@ -79,30 +79,6 @@ module "iam_jenkins" {
   role_name   = "jenkins"
 }
 
-module "monitoring_instance" {
-  source                    = "./modules/ec2"
-  name_prefix               = "shared"
-  name                      = "monitoring"
-  instance_type             = var.monitoring_instance_type
-  ami_id                    = var.ami_id
-  subnet_id                 = module.network.private_subnet_ids["monitoring"]
-  vpc_id                    = module.network.vpc_id
-  user_data                 = filebase64("${path.module}/scripts/startup_monitoring.sh")
-  ingress_rules             = var.monitoring_ingress_rules
-  common_tags               = var.common_tags
-  iam_instance_profile_name = module.iam_monitoring.instance_profile_name
-  app_port                  = var.monitoring_port
-  health_check_path         = var.monitoring_health_check_path
-  path_patterns             = var.monitoring_path
-  https_listener_arn        = module.loadbalancer.https_listener_arn
-  listener_rule_priority    = var.monitoring_listener_rule_priority
-}
-
-module "iam_monitoring" {
-  source      = "./modules/iam/monitoring" 
-  role_name   = "monitoring"
-}
-
 module "acm_seoul" {
   providers                 = { aws = aws.seoul }
   source                    = "../../modules/acm"
