@@ -21,6 +21,29 @@ resource "aws_codedeploy_app" "this" {
   })
 }
 
+resource "aws_iam_policy" "codedeploy_extra" {
+  name   = "${var.name_prefix}-codedeploy-extra"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "autoscaling:*",
+          "elasticloadbalancing:*",
+          "ec2:Describe*"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_extra" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = aws_iam_policy.codedeploy_extra.arn
+}
+
 # enable_blue_green = true	: BLUE_GREEN + WITH_TRAFFIC_CONTROL + LB 설정
 # enable_blue_green = false	: IN_PLACE + WITHOUT_TRAFFIC_CONTROL
 resource "aws_codedeploy_deployment_group" "this" {
@@ -28,6 +51,7 @@ resource "aws_codedeploy_deployment_group" "this" {
   deployment_group_name = "${var.name_prefix}-deployment-group"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
   deployment_config_name = var.deployment_config_name
+
   autoscaling_groups = [var.autoscaling_group_name]
 
   ec2_tag_set {
