@@ -86,3 +86,15 @@ variable "request_per_target_threshold" {
   type        = number
   default     = null
 }
+
+variable "additional_policy_arns" {
+  description = "공통 IAM Role에 추가로 붙일 정책 ARN 목록"
+  type    = list(string)
+  default = []
+}
+
+variable "secret_arns" {
+  description = "Secrets Manager 접근을 허용할 ARN 목록"
+  type        = list(string)
+  default     = []
+}

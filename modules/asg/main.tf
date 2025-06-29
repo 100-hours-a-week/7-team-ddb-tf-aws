@@ -1,19 +1,3 @@
-# EC2 인스턴스가 SSM을 사용할 수 있도록 허용하는 IAM Role
-resource "aws_iam_role" "ssm" {
-  name               = local.role_name
-  assume_role_policy = file("${path.module}/policy/ssm_instance_assume_role.json")
-}
-
-resource "aws_iam_role_policy_attachment" "ssm_core" {
-  role       = aws_iam_role.ssm.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_instance_profile" "this" {
-  name = local.instance_profile
-  role = aws_iam_role.ssm.name
-}
-
 # EC2 인스턴스용 Security Group 
 resource "aws_security_group" "this" {
   name        = local.security_group_name
