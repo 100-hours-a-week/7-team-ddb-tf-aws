@@ -80,8 +80,8 @@ module "route53" {
   domains_alias = {
     cdn = {
       domain_name   = var.cdn_domain_name
-      alias_name    = module.s3.cloudfront_domain_name
-      alias_zone_id = module.s3.cloudfront_zone_id
+      alias_name    = module.s3_cloudfront.cloudfront_domain_name
+      alias_zone_id = module.s3_cloudfront.cloudfront_zone_id
     },
     "${var.fe_alias_name}" = {
       domain_name   = var.fe_alias_name
