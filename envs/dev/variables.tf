@@ -241,7 +241,9 @@ variable "fe_additional_policy_arns" {
 variable "fe_secret_arns" {
   description = "Secrets Manager 접근을 허용할 ARN 목록"
   type        = list(string)
-  default     = ["arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:*"] # Test용. 수정 필요
+  default     = [
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:codedeploy/discord/webhook-*"
+  ]
 }
 
 # BE
@@ -290,7 +292,7 @@ variable "be_min_size" {
 variable "be_max_size" {
   description = "BE Auto Scaling Group이 허용할 최대 인스턴스 수"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "be_target_cpu_utilization" {
@@ -320,7 +322,11 @@ variable "be_additional_policy_arns" {
 variable "be_secret_arns" {
   description = "Secrets Manager 접근을 허용할 ARN 목록"
   type        = list(string)
-  default     = ["arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:*"] # Test용. 수정 필요
+  default     = [
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:dev/backend/env-*",
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:dev/rds/credentials-*",
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:codedeploy/discord/webhook-*"
+  ]
 }
 
 variable "nat_azs" {
