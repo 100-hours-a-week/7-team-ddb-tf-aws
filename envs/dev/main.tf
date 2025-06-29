@@ -103,7 +103,7 @@ module "rds" {
   db_subnet_ids         = module.network.db_subnet_ids
   common_tags           = var.common_tags
   env                   = var.env
-  allow_sg_list         = []
+  allow_sg_list         = [module.be.security_group_id]
   allow_cidr_block_list = []
   db_engine             = var.db_engine
   db_engine_version     = var.db_engine_version
@@ -126,9 +126,15 @@ module "fe" {
   alb_arn_suffix               = module.loadbalancer.alb_arn_suffix
   listener_rule_priority       = var.fe_listener_rule_priority
   host_header_values           = var.fe_host_header_values
+  desired_capacity             = var.fe_desired_capacity
+  min_size                     = var.fe_min_size
+  max_size                     = var.fe_max_size
   request_per_target_threshold = var.fe_request_per_target_threshold
   health_check_path            = var.fe_health_check_path
   allowed_cidrs                = var.fe_allowed_cidrs
+  enable_blue_green            = var.enable_blue_green
+  additional_policy_arns       = var.fe_additional_policy_arns
+  secret_arns                  = var.fe_secret_arns
 }
 
 module "be" {
@@ -146,9 +152,15 @@ module "be" {
   alb_arn_suffix           = module.loadbalancer.alb_arn_suffix
   listener_rule_priority   = var.be_listener_rule_priority
   host_header_values       = var.be_host_header_values
+  desired_capacity         = var.be_desired_capacity
+  min_size                 = var.be_min_size
+  max_size                 = var.be_max_size
   target_cpu_utilization   = var.be_target_cpu_utilization
   health_check_path        = var.be_health_check_path
   allowed_cidrs            = var.be_allowed_cidrs
+  enable_blue_green        = var.enable_blue_green
+  additional_policy_arns   = var.be_additional_policy_arns
+  secret_arns              = var.be_secret_arns
 }
     
 module "acm_seoul" {
@@ -171,7 +183,7 @@ module "acm_nova" {
   subject_alternative_names = [var.domain_wildcard]
 }
 
-module "s3" {
+module "s3_cloudfront" {
   source = "../../modules/s3_cloudfront"
   env                  = var.env
   bucket_name          = var.bucket_name
@@ -179,4 +191,36 @@ module "s3" {
   acm_certificate_arn  = module.acm_nova.cert_arn
   common_tags          = var.common_tags
   cors_origins         = var.cors_origins
+}
+
+module "s3_deployment" {
+  source = "../../modules/s3_deployment"
+  bucket_name = "dev-dolpin-codedeploy-artifacts"
+  common_tags          = var.common_tags
+}
+
+module "codedeploy_frontend" {
+  source = "../../modules/codedeploy"
+  name_prefix              = "frontend-dev"
+  deployment_config_name   = var.deployment_config_name
+  autoscaling_group_name   = module.fe.autoscaling_group_name
+  instance_name            = module.fe.instance_name
+  alb_listener_arn         = module.loadbalancer.https_listener_arn
+  blue_target_group_name   = module.fe.blue_target_group_name
+  green_target_group_name  = module.fe.green_target_group_name
+  enable_blue_green        = var.enable_blue_green
+  common_tags              = var.common_tags
+}
+
+module "codedeploy_backend" {
+  source = "../../modules/codedeploy"
+  name_prefix              = "backend-dev"
+  deployment_config_name   = var.deployment_config_name
+  autoscaling_group_name   = module.be.autoscaling_group_name
+  instance_name            = module.be.instance_name
+  alb_listener_arn         = module.loadbalancer.https_listener_arn
+  blue_target_group_name   = module.be.blue_target_group_name
+  green_target_group_name  = module.be.green_target_group_name
+  enable_blue_green        = var.enable_blue_green
+  common_tags              = var.common_tags
 }
