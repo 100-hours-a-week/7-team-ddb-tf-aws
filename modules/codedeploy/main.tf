@@ -51,14 +51,17 @@ resource "aws_codedeploy_deployment_group" "this" {
   deployment_group_name = "${var.name_prefix}-deployment-group"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
   deployment_config_name = var.deployment_config_name
+  
+  autoscaling_groups = var.enable_blue_green ? [var.autoscaling_group_name] : null
 
-  autoscaling_groups = [var.autoscaling_group_name]
-
-  ec2_tag_set {
-    ec2_tag_filter {
-      key   = "Name"
-      type  = "KEY_AND_VALUE"
-      value = var.instance_name
+  dynamic "ec2_tag_set" {
+    for_each = var.enable_blue_green ? [] : [1]
+    content {
+      ec2_tag_filter {
+        key   = "Name"
+        type  = "KEY_AND_VALUE"
+        value = var.instance_name
+      }
     }
   }
 
