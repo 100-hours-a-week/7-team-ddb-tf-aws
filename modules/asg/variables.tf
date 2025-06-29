@@ -98,3 +98,24 @@ variable "secret_arns" {
   type        = list(string)
   default     = []
 }
+
+variable "enable_blue_green" {
+  description = "blue/green 적용 여부"
+  type        = bool
+  default     = false
+}
+
+variable "desired_capacity" {
+  description = "Auto Scaling Group이 시작 시 유지할 인스턴스 수"
+  type        = number
+}
+
+variable "min_size" {
+  description = "Auto Scaling Group이 유지할 최소 인스턴스 수"
+  type        = number
+}
+
+variable "max_size" {
+  description = "Auto Scaling Group이 허용할 최대 인스턴스 수"
+  type        = number
+}
