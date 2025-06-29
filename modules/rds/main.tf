@@ -54,7 +54,7 @@ resource "aws_db_instance" "this" {
 }
 
 resource "aws_secretsmanager_secret" "backend_db_credentials" {
-  name        = "backend-db-${var.env}"
+  name        = "${var.env}/rds/credentials/secret"
   tags        = var.common_tags
 }
 
