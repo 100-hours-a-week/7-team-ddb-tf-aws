@@ -324,7 +324,7 @@ variable "be_secret_arns" {
   type        = list(string)
   default     = [
     "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:dev/backend/env-*",
-    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:dev/rds/credentials-*",
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:dev/rds/credentials/secret-*",
     "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:codedeploy/discord/webhook-*"
   ]
 }
