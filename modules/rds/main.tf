@@ -52,3 +52,23 @@ resource "aws_db_instance" "this" {
     Name = "db-${var.env}"
   })
 }
+
+resource "aws_secretsmanager_secret" "backend_db_credentials" {
+  name        = "${var.env}/rds/credentials/secret"
+  tags        = var.common_tags
+}
+
+data "aws_secretsmanager_secret_version" "rds_auto_secret_version" {
+  secret_id = aws_db_instance.this.master_user_secret[0].secret_arn
+}
+
+resource "aws_secretsmanager_secret_version" "backend_db_secret_value" {
+  secret_id = aws_secretsmanager_secret.backend_db_credentials.id
+
+  secret_string = jsonencode({
+    host     = aws_db_instance.this.endpoint
+    port     = 5432
+    username = "dolpinuser"
+    password = jsondecode(data.aws_secretsmanager_secret_version.rds_auto_secret_version.secret_string).password
+  })
+}

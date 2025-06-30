@@ -152,13 +152,19 @@ variable "jenkins_health_check_path" {
 variable "jenkins_path" {
   description = "ALB에서 Jenkins로 포워딩할 Path 패턴"
   type        = list(string)
-  default     = ["/jenkins*"]
+  default     = ["/*"]
 }
 
 variable "jenkins_listener_rule_priority" {
   description = "Jenkins ALB Listener Rule의 우선순위"
   type        = number
   default     = 100
+}
+
+variable "jenkins_alias_name" {
+  description = "jenkins 도메인의 Route53 ALIAS 레코드 이름"
+  type        = string
+  default     = "jenkins.shared.dolpin.site"
 }
 
 variable "monitoring_port" {
