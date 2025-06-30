@@ -226,6 +226,12 @@ variable "fe_health_check_path" {
   default     = "/api/health"
 }
 
+variable "fe_health_check_period" {
+  description = "헬스 체크 대기 시간"
+  type        = number
+  default     = 600
+}
+
 variable "fe_allowed_cidrs" {
   description = "FE 인스턴스로의 접근을 허용할 CIDR 리스트"
   type        = list(string)
@@ -305,6 +311,12 @@ variable "be_health_check_path" {
   description = "BE ALB 헬스 체크 경로"
   type        = string
   default     = "/api/v1/health"
+}
+
+variable "be_health_check_period" {
+  description = "헬스 체크 대기 시간"
+  type        = number
+  default     = 300
 }
 
 variable "be_allowed_cidrs" {
