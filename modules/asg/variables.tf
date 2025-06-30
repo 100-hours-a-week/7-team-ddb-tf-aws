@@ -60,6 +60,11 @@ variable "health_check_path" {
   type        = string
 }
 
+variable "health_check_period" {
+  description = "헬스 체크 대기 시간"
+  type        = number
+}
+
 variable "alb_listener_arn_https" {
   description = "HTTPS Listener ARN"
   type        = string

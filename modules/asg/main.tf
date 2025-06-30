@@ -94,13 +94,16 @@ resource "aws_lb_target_group" "blue" {
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
+  deregistration_delay = 60
+  slow_start           = 30
+
   health_check {
     path                = var.health_check_path
     matcher             = "200-399"
     interval            = 30
     timeout             = 5
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
+    healthy_threshold   = 2
+    unhealthy_threshold = 5
   }
 
   target_type = "instance"
@@ -117,13 +120,16 @@ resource "aws_lb_target_group" "green" {
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
+  deregistration_delay = 60
+  slow_start           = 30
+
   health_check {
     path                = var.health_check_path
     matcher             = "200-399"
     interval            = 30
     timeout             = 5
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
+    healthy_threshold   = 2
+    unhealthy_threshold = 5
   }
 
   target_type = "instance"
@@ -184,8 +190,8 @@ resource "aws_autoscaling_group" "this" {
     aws_lb_target_group.blue.arn
   ]
   health_check_type         = "ELB"
-  health_check_grace_period = 100
-  default_instance_warmup   = 60
+  health_check_grace_period = var.health_check_period
+  default_instance_warmup   = null
 
   lifecycle {
     create_before_destroy = true
