@@ -195,13 +195,13 @@ module "s3_cloudfront" {
 
 module "s3_deployment" {
   source = "../../modules/s3_deployment"
-  bucket_name = "dev-dolpin-codedeploy-artifacts"
+  bucket_name = "prod-dolpin-codedeploy-artifacts"
   common_tags          = var.common_tags
 }
 
 module "codedeploy_frontend" {
   source = "../../modules/codedeploy"
-  name_prefix              = "frontend-dev"
+  name_prefix              = "frontend-prod"
   deployment_config_name   = var.deployment_config_name
   autoscaling_group_name   = module.fe.autoscaling_group_name
   instance_name            = module.fe.instance_name
@@ -214,7 +214,7 @@ module "codedeploy_frontend" {
 
 module "codedeploy_backend" {
   source = "../../modules/codedeploy"
-  name_prefix              = "backend-dev"
+  name_prefix              = "backend-prod"
   deployment_config_name   = var.deployment_config_name
   autoscaling_group_name   = module.be.autoscaling_group_name
   instance_name            = module.be.instance_name
