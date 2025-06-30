@@ -86,3 +86,36 @@ variable "request_per_target_threshold" {
   type        = number
   default     = null
 }
+
+variable "additional_policy_arns" {
+  description = "공통 IAM Role에 추가로 붙일 정책 ARN 목록"
+  type    = list(string)
+  default = []
+}
+
+variable "secret_arns" {
+  description = "Secrets Manager 접근을 허용할 ARN 목록"
+  type        = list(string)
+  default     = []
+}
+
+variable "enable_blue_green" {
+  description = "blue/green 적용 여부"
+  type        = bool
+  default     = false
+}
+
+variable "desired_capacity" {
+  description = "Auto Scaling Group이 시작 시 유지할 인스턴스 수"
+  type        = number
+}
+
+variable "min_size" {
+  description = "Auto Scaling Group이 유지할 최소 인스턴스 수"
+  type        = number
+}
+
+variable "max_size" {
+  description = "Auto Scaling Group이 허용할 최대 인스턴스 수"
+  type        = number
+}

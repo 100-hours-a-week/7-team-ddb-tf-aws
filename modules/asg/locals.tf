@@ -9,3 +9,12 @@ locals {
   instance_name       = "${var.component}-instance-${var.env}"
   scaling_policy_name = "${var.component}-scaling-${var.env}"
 }
+
+# 기본 정책 Attach (SSM, CodeDeploy, ECR)
+locals {
+  default_policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  ]
+}
