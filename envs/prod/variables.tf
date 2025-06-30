@@ -196,6 +196,24 @@ variable "fe_host_header_values" {
   default     = ["dolpin.site"]
 }
 
+variable "fe_desired_capacity" {
+  description = "FE Auto Scaling Group이 시작 시 유지할 인스턴스 수"
+  type        = number
+  default     = 1
+}
+
+variable "fe_min_size" {
+  description = "FE Auto Scaling Group이 유지할 최소 인스턴스 수"
+  type        = number
+  default     = 1
+}
+
+variable "fe_max_size" {
+  description = "FE Auto Scaling Group이 허용할 최대 인스턴스 수"
+  type        = number
+  default     = 2
+}
+
 variable "fe_request_per_target_threshold" {
   description = "FE 오토스케일링: Target 당 요청 수 임계값"
   type        = number
@@ -212,6 +230,20 @@ variable "fe_allowed_cidrs" {
   description = "FE 인스턴스로의 접근을 허용할 CIDR 리스트"
   type        = list(string)
   default     = ["10.30.0.0/16"]
+}
+
+variable "fe_additional_policy_arns" {
+  description = "frontend 인스턴스에 추가로 부여할 IAM 정책 ARN 목록"
+  type        = list(string)
+  default     = []
+}
+
+variable "fe_secret_arns" {
+  description = "Secrets Manager 접근을 허용할 ARN 목록"
+  type        = list(string)
+  default     = [
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:codedeploy/discord/webhook-*"
+  ]
 }
 
 # BE
@@ -245,6 +277,24 @@ variable "be_host_header_values" {
   default     = ["be.dolpin.site"]
 }
 
+variable "be_desired_capacity" {
+  description = "BE Auto Scaling Group이 시작 시 유지할 인스턴스 수"
+  type        = number
+  default     = 1
+}
+
+variable "be_min_size" {
+  description = "BE Auto Scaling Group이 유지할 최소 인스턴스 수"
+  type        = number
+  default     = 1
+}
+
+variable "be_max_size" {
+  description = "BE Auto Scaling Group이 허용할 최대 인스턴스 수"
+  type        = number
+  default     = 2
+}
+
 variable "be_target_cpu_utilization" {
   description = "BE 오토스케일링: 목표 CPU 사용률"
   type        = number
@@ -261,6 +311,22 @@ variable "be_allowed_cidrs" {
   description = "BE 인스턴스로의 접근을 허용할 CIDR 리스트"
   type        = list(string)
   default     = ["10.30.0.0/16"]
+}
+
+variable "be_additional_policy_arns" {
+  description = "backend 인스턴스에 추가로 부여할 IAM 정책 ARN 목록"
+  type        = list(string)
+  default     = ["arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"]
+}
+
+variable "be_secret_arns" {
+  description = "Secrets Manager 접근을 허용할 ARN 목록"
+  type        = list(string)
+  default     = [
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:prod/backend/env-*",
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:prod/rds/credentials/secret-*",
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:codedeploy/discord/webhook-*"
+  ]
 }
 
 variable "nat_azs" {
@@ -286,4 +352,16 @@ variable "cors_origins" {
   description = "CORS 허용 origin 리스트"
   type        = list(string)
   default     = ["https://dolpin.site"]
+}
+
+variable "enable_blue_green" {
+  description = "blue/green 적용 여부"
+  type        = bool
+  default     = false
+}
+
+variable "deployment_config_name" {
+  description = "CodeDeploy 배포 구성 이름"
+  type        = string
+  default     = "CodeDeployDefault.AllAtOnce"
 }

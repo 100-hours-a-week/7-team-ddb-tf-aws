@@ -1,19 +1,3 @@
-# EC2 인스턴스가 SSM을 사용할 수 있도록 허용하는 IAM Role
-resource "aws_iam_role" "ssm" {
-  name               = local.role_name
-  assume_role_policy = file("${path.module}/policy/ssm_instance_assume_role.json")
-}
-
-resource "aws_iam_role_policy_attachment" "ssm_core" {
-  role       = aws_iam_role.ssm.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_instance_profile" "this" {
-  name = local.instance_profile
-  role = aws_iam_role.ssm.name
-}
-
 # EC2 인스턴스용 Security Group 
 resource "aws_security_group" "this" {
   name        = local.security_group_name
@@ -104,8 +88,8 @@ resource "aws_launch_template" "this" {
   }
 }
 
-resource "aws_lb_target_group" "this" {
-  name     = local.target_group_name
+resource "aws_lb_target_group" "blue" {
+  name     = "${local.target_group_name}-blue"
   port     = var.port
   protocol = "HTTP"
   vpc_id   = var.vpc_id
@@ -122,7 +106,30 @@ resource "aws_lb_target_group" "this" {
   target_type = "instance"
 
   tags = merge(var.common_tags, {
-    Name = local.target_group_name
+    Name = "${local.target_group_name}-blue"
+  })
+}
+
+resource "aws_lb_target_group" "green" {
+  count    = var.enable_blue_green ? 1 : 0
+  name     = "${local.target_group_name}-green"
+  port     = var.port
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+
+  health_check {
+    path                = var.health_check_path
+    matcher             = "200-399"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
+
+  target_type = "instance"
+
+  tags = merge(var.common_tags, {
+    Name = "${local.target_group_name}-green"
   })
 }
 
@@ -132,7 +139,7 @@ resource "aws_lb_listener_rule" "host_rule" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.this.arn
+    target_group_arn = aws_lb_target_group.blue.arn
   }
 
   condition {
@@ -141,17 +148,41 @@ resource "aws_lb_listener_rule" "host_rule" {
     }
   }
 
-  depends_on = [aws_lb_target_group.this]
+  depends_on = [aws_lb_target_group.blue]
+}
+
+resource "aws_lb_listener_rule" "green_placeholder" {
+  count        = var.enable_blue_green ? 1 : 0
+  listener_arn = var.alb_listener_arn_https
+  priority     = var.listener_rule_priority + 100  
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.green[0].arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/__green__codedeploy__probe__"]
+    }
+  }
+
+  depends_on = [aws_lb_target_group.green]
 }
 
 # Auto Scaling Group 정의 (Launch Template 기반)
 resource "aws_autoscaling_group" "this" {
   name                      = local.asg_name
-  desired_capacity          = 1
-  min_size                  = 1
-  max_size                  = 2
+  desired_capacity          = var.desired_capacity
+  min_size                  = var.min_size
+  max_size                  = var.max_size
   vpc_zone_identifier       = var.subnet_ids
-  target_group_arns         = [aws_lb_target_group.this.arn]
+  target_group_arns = var.enable_blue_green ? [
+    aws_lb_target_group.blue.arn,
+    aws_lb_target_group.green[0].arn
+  ] : [
+    aws_lb_target_group.blue.arn
+  ]
   health_check_type         = "ELB"
   health_check_grace_period = 100
   default_instance_warmup   = 60
@@ -182,7 +213,7 @@ resource "aws_autoscaling_policy" "cpu_scaling" {
     disable_scale_in   = false
   }
 
-  depends_on = [aws_lb_target_group.this, aws_lb_listener_rule.host_rule]
+  depends_on = [aws_lb_target_group.blue, aws_lb_listener_rule.host_rule]
 }
 
 # ALB 요청 수 기반 오토스케일링 정책 (조건부 생성)
@@ -196,12 +227,11 @@ resource "aws_autoscaling_policy" "request_scaling" {
   target_tracking_configuration {
     predefined_metric_specification {
       predefined_metric_type = "ALBRequestCountPerTarget"
-      resource_label         = "${var.alb_arn_suffix}/${aws_lb_target_group.this.arn_suffix}"
+      resource_label         = "${var.alb_arn_suffix}/${aws_lb_target_group.blue.arn_suffix}"
     }
     target_value       = var.request_per_target_threshold
     disable_scale_in   = false
   }
 
-  depends_on = [aws_lb_target_group.this, aws_lb_listener_rule.host_rule]
+  depends_on = [aws_lb_target_group.blue, aws_lb_listener_rule.host_rule]
 }
-
