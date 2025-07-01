@@ -62,6 +62,14 @@ variable "private_subnets" {
       cidr = "10.20.220.0/24"
       az   = "ap-northeast-2c"
     }
+    redis-a = {
+      cidr = "10.20.310.0/24"
+      az   = "ap-northeast-2a"
+    }
+    redis-c = {
+      cidr = "10.20.320.0/24"
+      az   = "ap-northeast-2c"
+    }
   }
 }
 
