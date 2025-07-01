@@ -18,6 +18,11 @@ variable "allow_sg_list" {
   type = list(string)
 }
 
+variable "snapshot_retention_limit" {
+  description = "유지할 snapshot 개수"
+  type        = number
+}
+
 variable "env" {
   description = "환경"
   type        = string

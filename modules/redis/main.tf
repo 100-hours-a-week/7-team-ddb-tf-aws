@@ -62,3 +62,42 @@ resource "random_password" "redis_password" {
   special = true
   override_special = "!@#$%^&*()-_+[]{}<>?,."
 }
+
+resource "aws_elasticache_replication_group" "this" { 
+  replication_group_id       = "refresh-token-rg-${var.env}"
+  description                = "refresh token 저장할 Redis"
+  engine                     = "redis"
+  engine_version             = "7.2"
+  node_type                  = "cache.t3.micro"
+  num_cache_clusters         = 1
+  port                       = 6379
+  parameter_group_name       = "default.redis7"
+  subnet_group_name          = aws_elasticache_subnet_group.this.name
+  security_group_ids         = [aws_security_group.this.id]
+  user_group_ids             = [aws_elasticache_user_group.this.user_group_id]
+  transit_encryption_enabled = true
+  apply_immediately          = true
+  auto_minor_version_upgrade = true
+  snapshot_retention_limit   = var.snapshot_retention_limit
+  snapshot_window            = "17:00-18:00"
+
+  tags = merge(var.common_tags, {
+    Name = "redis-rg-${var.env}"
+  })
+}
+
+resource "aws_secretsmanager_secret" "redis_credentials" {
+  name = "${var.env}/redis/credentials/secret"
+  tags = var.common_tags
+}
+
+resource "aws_secretsmanager_secret_version" "redis_secret_value" {
+  secret_id = aws_secretsmanager_secret.redis_credentials.id
+
+  secret_string = jsonencode({
+    host     = aws_elasticache_replication_group.this.primary_endpoint_address
+    port     = 6379
+    username = aws_elasticache_user.admin.user_name
+    password = random_password.redis_password.result
+  })
+}
