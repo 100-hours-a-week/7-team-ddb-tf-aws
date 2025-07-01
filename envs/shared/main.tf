@@ -60,9 +60,9 @@ module "jenkins_instance" {
   ami_id                    = var.ami_id
   subnet_id                 = module.network.private_subnet_ids["cicd"]
   vpc_id                    = module.network.vpc_id
-  user_data                 = base64encode(templatefile("${path.module}/scripts/startup_jenkins.sh.tpl", {
-    dockerfile_content    = file("${path.module}/files/Dockerfile.jenkins")
-    dockercompose_content = file("${path.module}/files/docker-compose.yml")
+  user_data                 = base64encode(templatefile("${path.module}/jenkins/scripts/startup_jenkins.sh.tpl", {
+    dockerfile_content    = file("${path.module}/jenkins/files/Dockerfile.jenkins")
+    dockercompose_content = file("${path.module}/jenkins/files/docker-compose.yml")
   }))
   ingress_rules             = var.jenkins_ingress_rules
   common_tags               = var.common_tags
