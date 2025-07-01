@@ -385,3 +385,40 @@ variable "deployment_config_name" {
   type        = string
   default     = "CodeDeployDefault.AllAtOnce"
 }
+
+# Redis
+variable "redis_prefix" {
+  description = "Redis group 이름 prefix"
+  type        = string
+  default     = "refresh-token-rg"
+}
+
+variable "redis_engine_version" {
+  description = "Redis 엔진 버전"
+  type        = string
+  default     = "7.2"
+}
+
+variable "node_type" {
+  description = "Redis 인스턴스 노드 타입"
+  type        = string
+  default     = "cache.t3.micro"
+}
+
+variable "cache_clusters" {
+  description = "Redis 클러스터의 캐시 노드 수 (primary + replica 개수)"
+  type        = number
+  default     = 1
+}
+
+variable "parameter_group_name" {
+  description = "Redis 파라미터 그룹 이름"
+  type        = string
+  default     = "default.redis7"
+}
+
+variable "snapshot_retention_limit" {
+  description = "유지할 snapshot 개수"
+  type        = number
+  default     = 1
+}
