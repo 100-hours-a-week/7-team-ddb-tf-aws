@@ -30,3 +30,35 @@ resource "aws_security_group" "this" {
     Name = "redis-sg-${var.env}"
   })
 }
+
+resource "aws_elasticache_user" "admin" {
+  user_id       = "refresh-token-user-${var.env}"
+  user_name     = "refresh"
+  engine        = "redis"
+  access_string = "on ~* +@all"
+  passwords     = [random_password.redis_password.result]
+
+  tags = merge(var.common_tags, {
+    Name = "redis-user-${var.env}"
+  })
+}
+
+resource "aws_elasticache_user_group" "this" { 
+  engine        = "redis"
+  user_group_id = "refresh-token-group-${var.env}"
+  user_ids      = [aws_elasticache_user.admin.user_id]
+
+  lifecycle {
+    ignore_changes = [user_ids]
+  }
+
+  tags = merge(var.common_tags, {
+    Name = "redis-user-group-${var.env}"
+  })
+}
+
+resource "random_password" "redis_password" {
+  length  = 32
+  special = true
+  override_special = "!@#$%^&*()-_+[]{}<>?,."
+}
