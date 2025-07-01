@@ -78,7 +78,8 @@ def lambda_handler(event, context):
         daily_amount = daily_cost_data['ResultsByTime'][0]['Total']['UnblendedCost']['Amount']
 
         # 이번 달 누적 비용 조회
-        start_of_month = now.replace(day=1).strftime('%Y-%m-%d')
+        yesterday = now - datetime.timedelta(days=1)
+        start_of_month = yesterday.replace(day=1).strftime('%Y-%m-%d')
         monthly_cost_data = ce.get_cost_and_usage(
             TimePeriod={'Start': start_of_month, 'End': end},
             Granularity='MONTHLY',
