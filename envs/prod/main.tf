@@ -131,6 +131,7 @@ module "fe" {
   max_size                     = var.fe_max_size
   request_per_target_threshold = var.fe_request_per_target_threshold
   health_check_path            = var.fe_health_check_path
+  health_check_period          = var.fe_health_check_period 
   allowed_cidrs                = var.fe_allowed_cidrs
   enable_blue_green            = var.enable_blue_green
   additional_policy_arns       = var.fe_additional_policy_arns
@@ -157,6 +158,7 @@ module "be" {
   max_size                 = var.be_max_size
   target_cpu_utilization   = var.be_target_cpu_utilization
   health_check_path        = var.be_health_check_path
+  health_check_period      = var.be_health_check_period 
   allowed_cidrs            = var.be_allowed_cidrs
   enable_blue_green        = var.enable_blue_green
   additional_policy_arns   = var.be_additional_policy_arns
