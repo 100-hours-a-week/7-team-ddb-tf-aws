@@ -34,3 +34,11 @@ module "cost_report" {
   env                      = var.env
   component                = "cr"
 }
+
+module "tf_automation" {
+  source           = "./modules/tf_automation"
+  common_tags      = var.common_tags
+  env              = var.env
+  component        = "ta"
+  lambda_schedules = var.lambda_schedules
+}
