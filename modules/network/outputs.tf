@@ -25,6 +25,11 @@ output "db_subnet_ids" {
   value       = [for k, s in aws_subnet.private : s.id if startswith(k, "db")]
 }
 
+output "redis_subnet_ids" {
+  description = "Redis subnet ID 리스트"
+  value       = [for k, s in aws_subnet.private : s.id if startswith(k, "redis")]
+}
+
 output "private_route_table_ids" {
   description = "AZ별 private route table ID"
   value = {
