@@ -64,14 +64,14 @@ resource "random_password" "redis_password" {
 }
 
 resource "aws_elasticache_replication_group" "this" { 
-  replication_group_id       = "refresh-token-rg-${var.env}"
+  replication_group_id       = "${var.redis_prefix}-${var.env}"
   description                = "refresh token 저장할 Redis"
   engine                     = "redis"
-  engine_version             = "7.2"
-  node_type                  = "cache.t3.micro"
-  num_cache_clusters         = 1
+  engine_version             = var.redis_engine_version
+  node_type                  = var.node_type 
+  num_cache_clusters         = var.cache_clusters
   port                       = 6379
-  parameter_group_name       = "default.redis7"
+  parameter_group_name       = var.parameter_group_name
   subnet_group_name          = aws_elasticache_subnet_group.this.name
   security_group_ids         = [aws_security_group.this.id]
   user_group_ids             = [aws_elasticache_user_group.this.user_group_id]
