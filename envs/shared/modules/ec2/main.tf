@@ -76,6 +76,9 @@ resource "aws_instance" "this" {
   })
 
   user_data = var.user_data
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Target Group
