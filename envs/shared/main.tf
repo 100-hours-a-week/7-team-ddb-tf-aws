@@ -88,3 +88,13 @@ module "acm_seoul" {
   domain_zone_name = var.domain_zone_name
   subject_alternative_names = [var.domain_wildcard]
 }
+
+module "loki_backup" {
+  source      = "./modules/s3"
+  bucket_name = "loki-backup-bn2gz7v3he1rj0ia"
+}
+
+module "thanos_backup" {
+  source = "./modules/s3"
+  bucket_name = "thanos-backup-bn2gz7v3he1rj0ia"
+}
