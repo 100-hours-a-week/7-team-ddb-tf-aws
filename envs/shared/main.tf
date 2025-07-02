@@ -99,6 +99,12 @@ module "thanos_backup" {
   bucket_name = "thanos-backup-bn2gz7v3he1rj0ia"
 }
 
+module "monitoring_iam" {
+  source     = "./modules/iam/monitoring"
+  s3_buckets = local.s3_buckets
+  role_name  = "monitoring"
+}
+
 module "monitoring_instance" {
   source                    = "./modules/ec2"
   name_prefix               = "shared"
