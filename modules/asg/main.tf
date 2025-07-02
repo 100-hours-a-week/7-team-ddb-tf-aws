@@ -249,3 +249,30 @@ resource "aws_autoscaling_policy" "request_scaling" {
 
   depends_on = [aws_lb_target_group.blue, aws_lb_listener_rule.host_rule]
 }
+
+resource "aws_security_group" "monitoring" {
+  name        = "monitoring-sg"
+  description = "Allow inbound traffic from monitoring sources"
+  vpc_id      = var.vpc_id
+
+  dynamic "ingress" {
+    for_each = local.allow_port_rules
+    content {
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
+      protocol    = "tcp"
+      cidr_blocks = [ingress.value.cidr]
+    }
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "monitoring-sg"
+  }
+}

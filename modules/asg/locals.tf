@@ -18,3 +18,14 @@ locals {
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   ]
 }
+
+locals {
+  allow_port_rules = flatten([
+    for cidr, ports in var.allow_port : [
+      for port in ports : {
+        cidr = cidr
+        port = port
+      }
+    ]
+  ])
+}

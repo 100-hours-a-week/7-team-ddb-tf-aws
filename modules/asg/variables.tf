@@ -124,3 +124,8 @@ variable "max_size" {
   description = "Auto Scaling Group이 허용할 최대 인스턴스 수"
   type        = number
 }
+
+variable "allow_port" {
+  description = "CIDR 별로 허용할 포트 리스트"
+  type        = map(list(number))
+}
