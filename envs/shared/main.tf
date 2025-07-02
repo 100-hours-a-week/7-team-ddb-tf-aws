@@ -98,3 +98,21 @@ module "thanos_backup" {
   source = "./modules/s3"
   bucket_name = "thanos-backup-bn2gz7v3he1rj0ia"
 }
+
+module "monitoring_instance" {
+  source                    = "./modules/ec2"
+  name_prefix               = "shared"
+  name                      = "monitoring"
+  instance_type             = var.monitoring_instance_type
+  ami_id                    = var.ami_id
+  subnet_id                 = module.network.private_subnet_ids["monitoring"]
+  vpc_id                    = module.network.vpc_id
+  user_data                 = base64encode(file("${path.module}/monitoring/script/startup.sh"))
+  ingress_rules             = var.monitoring_ingress_rules
+  common_tags               = var.common_tags
+  iam_instance_profile_name = module.monitoring_iam.instance_profile_name
+  app_port                  = var.monitoring_port
+  health_check_path         = var.monitoring_health_check_path
+  https_listener_arn        = module.loadbalancer.https_listener_arn
+  listener_rule_priority    = var.monitoring_listener_rule_priority
+}

@@ -133,6 +133,14 @@ variable "monitoring_ingress_rules" {
     {
       port  = 443
       cidrs = ["0.0.0.0/0"]
+    },
+    {
+      port = 9100
+      cidrs = ["10.30.110.0/24"]
+    },
+    {
+      port = 3000
+      cidrs = ["0.0.0.0/0"]
     }
   ]
 }
