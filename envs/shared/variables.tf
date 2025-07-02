@@ -197,4 +197,8 @@ variable "monitoring_listener_rule_priority" {
   description = "Monitoring ALB Listener Rule의 우선순위"
   type        = number
   default     = 110
+variable "monitoring_alias_name" {
+  description = "monitoring 도메인의 Route53 ALIAS 레코드 이름"
+  type        = string
+  default     = "monitoring.shared.dolpin.site"
 }

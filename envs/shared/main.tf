@@ -48,6 +48,11 @@ module "route53" {
       alias_name    = module.loadbalancer.alb_dns_name
       alias_zone_id = module.loadbalancer.alb_zone_id
     }
+    "${var.monitoring_alias_name}" = {
+      domain_name   = var.monitoring_alias_name
+      alias_name    = module.loadbalancer.alb_dns_name
+      alias_zone_id = module.loadbalancer.alb_zone_id
+    }
   }
   domains_records = {}
 }
