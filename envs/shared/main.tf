@@ -74,9 +74,9 @@ module "jenkins_instance" {
   iam_instance_profile_name = module.iam_jenkins.instance_profile_name
   app_port                  = var.jenkins_port
   health_check_path         = var.jenkins_health_check_path
-  path_patterns             = var.jenkins_path
   https_listener_arn        = module.loadbalancer.https_listener_arn
   listener_rule_priority    = var.jenkins_listener_rule_priority
+  host_header_values = [var.jenkins_alias_name]
 }
 
 module "iam_jenkins" {
@@ -126,4 +126,5 @@ module "monitoring_instance" {
   health_check_path         = var.monitoring_health_check_path
   https_listener_arn        = module.loadbalancer.https_listener_arn
   listener_rule_priority    = var.monitoring_listener_rule_priority
+  host_header_values = [var.monitoring_alias_name]
 }

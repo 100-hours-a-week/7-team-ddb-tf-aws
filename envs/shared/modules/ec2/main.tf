@@ -110,8 +110,8 @@ resource "aws_lb_listener_rule" "https_rule" {
   }
 
   condition {
-    path_pattern {
-      values = var.path_patterns
+    host_header {
+      values = var.host_header_values
     }
   }
 

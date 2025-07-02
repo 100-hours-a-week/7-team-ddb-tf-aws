@@ -80,7 +80,7 @@ variable "listener_rule_priority" {
   default     = 100
 }
 
-variable "path_patterns" {
-  description = "경로 패턴"
-  type        = list(string)
+variable "host_header_values" {
+  description = "host header value"
+  type = list(string)
 }

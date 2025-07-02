@@ -157,12 +157,6 @@ variable "jenkins_health_check_path" {
   default     = "/login"
 }
 
-variable "jenkins_path" {
-  description = "ALB에서 Jenkins로 포워딩할 Path 패턴"
-  type        = list(string)
-  default     = ["/*"]
-}
-
 variable "jenkins_listener_rule_priority" {
   description = "Jenkins ALB Listener Rule의 우선순위"
   type        = number
@@ -187,11 +181,6 @@ variable "monitoring_health_check_path" {
   default     = "/api/health"
 }
 
-variable "monitoring_path" {
-  description = "ALB에서 Monitoring으로 포워딩할 Path 패턴"
-  type        = list(string)
-  default     = ["/monitoring*"]
-}
 
 variable "monitoring_listener_rule_priority" {
   description = "Monitoring ALB Listener Rule의 우선순위"
