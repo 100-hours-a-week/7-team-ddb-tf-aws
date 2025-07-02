@@ -31,6 +31,18 @@ resource "aws_security_group" "this" {
   })
 }
 
+resource "aws_elasticache_user" "default" {
+  user_id       = "default-user-${var.env}"
+  user_name     = "default"
+  engine        = "redis"
+  access_string = "on ~* +@all"
+  passwords     = [random_password.redis_password.result]
+
+  tags = merge(var.common_tags, {
+    Name = "redis-default-user-${var.env}"
+  })
+}
+
 resource "aws_elasticache_user" "admin" {
   user_id       = "refresh-token-user-${var.env}"
   user_name     = "refresh"
@@ -46,7 +58,10 @@ resource "aws_elasticache_user" "admin" {
 resource "aws_elasticache_user_group" "this" { 
   engine        = "redis"
   user_group_id = "refresh-token-group-${var.env}"
-  user_ids      = [aws_elasticache_user.admin.user_id]
+  user_ids = [
+    aws_elasticache_user.default.user_id,
+    aws_elasticache_user.admin.user_id,
+  ]
 
   lifecycle {
     ignore_changes = [user_ids]
@@ -65,7 +80,7 @@ resource "random_password" "redis_password" {
 
 resource "aws_elasticache_replication_group" "this" { 
   replication_group_id       = "${var.redis_prefix}-${var.env}"
-  description                = "refresh token 저장할 Redis"
+  description                = "Redis for refresh token - ${var.env} environment"
   engine                     = "redis"
   engine_version             = var.redis_engine_version
   node_type                  = var.node_type 
@@ -87,7 +102,7 @@ resource "aws_elasticache_replication_group" "this" {
 }
 
 resource "aws_secretsmanager_secret" "redis_credentials" {
-  name = "${var.env}/redis/credentials/secret"
+  name = "${var.env}/re"
   tags = var.common_tags
 }
 
