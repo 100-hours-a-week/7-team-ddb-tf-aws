@@ -136,6 +136,7 @@ module "fe" {
   enable_blue_green            = var.enable_blue_green
   additional_policy_arns       = var.fe_additional_policy_arns
   secret_arns                  = var.fe_secret_arns
+  allow_port                   = var.fe_allow_port
 }
 
 module "be" {
@@ -163,6 +164,7 @@ module "be" {
   enable_blue_green        = var.enable_blue_green
   additional_policy_arns   = var.be_additional_policy_arns
   secret_arns              = var.be_secret_arns
+  allow_port             = var.be_allow_port
 }
     
 module "acm_seoul" {
