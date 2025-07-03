@@ -102,7 +102,7 @@ resource "aws_elasticache_replication_group" "this" {
 }
 
 resource "aws_secretsmanager_secret" "redis_credentials" {
-  name = "${var.env}/re"
+  name = "${var.env}/redis/credentials/secret"
   tags = var.common_tags
 }
 

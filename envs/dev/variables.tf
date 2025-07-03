@@ -63,11 +63,11 @@ variable "private_subnets" {
       az   = "ap-northeast-2c"
     }
     redis-a = {
-      cidr = "10.20.310.0/24"
+      cidr = "10.20.230.0/24"
       az   = "ap-northeast-2a"
     }
     redis-c = {
-      cidr = "10.20.320.0/24"
+      cidr = "10.20.240.0/24"
       az   = "ap-northeast-2c"
     }
   }
@@ -345,7 +345,8 @@ variable "be_secret_arns" {
   default     = [
     "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:dev/backend/env-*",
     "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:dev/rds/credentials/secret-*",
-    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:codedeploy/discord/webhook-*"
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:codedeploy/discord/webhook-*",
+    "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:dev/redis/credentials/secret-*"
   ]
 }
 
@@ -396,7 +397,7 @@ variable "redis_prefix" {
 variable "redis_engine_version" {
   description = "Redis 엔진 버전"
   type        = string
-  default     = "7.2"
+  default     = "7.0"
 }
 
 variable "node_type" {
