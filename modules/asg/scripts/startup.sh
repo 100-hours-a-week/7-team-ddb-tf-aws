@@ -43,4 +43,11 @@ curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.
   sudo ./aws/install
   rm -rf aws awscliv2.zip
 
+echo "▶ Node Exporter 컨테이너 실행"
+sudo docker run -d \
+  --name node-exporter \
+  --restart unless-stopped \
+  -p 9100:9100 \
+  prom/node-exporter:v1.9.1
+
 echo "✅ startup.sh 완료"

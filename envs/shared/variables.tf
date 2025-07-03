@@ -113,6 +113,10 @@ variable "jenkins_ingress_rules" {
     {
       port  = 9090
       cidrs = ["0.0.0.0/0"]
+    },
+    {
+      port = 9100
+      cidrs = ["10.30.110.0/24"]
     }
   ]
 }
@@ -133,6 +137,14 @@ variable "monitoring_ingress_rules" {
     {
       port  = 443
       cidrs = ["0.0.0.0/0"]
+    },
+    {
+      port = 9100
+      cidrs = ["10.30.110.0/24"]
+    },
+    {
+      port = 3000
+      cidrs = ["0.0.0.0/0"]
     }
   ]
 }
@@ -147,12 +159,6 @@ variable "jenkins_health_check_path" {
   description = "Jenkins 인스턴스의 Health Check 경로"
   type        = string
   default     = "/login"
-}
-
-variable "jenkins_path" {
-  description = "ALB에서 Jenkins로 포워딩할 Path 패턴"
-  type        = list(string)
-  default     = ["/*"]
 }
 
 variable "jenkins_listener_rule_priority" {
@@ -179,14 +185,15 @@ variable "monitoring_health_check_path" {
   default     = "/api/health"
 }
 
-variable "monitoring_path" {
-  description = "ALB에서 Monitoring으로 포워딩할 Path 패턴"
-  type        = list(string)
-  default     = ["/monitoring*"]
-}
 
 variable "monitoring_listener_rule_priority" {
   description = "Monitoring ALB Listener Rule의 우선순위"
   type        = number
   default     = 110
+}
+
+variable "monitoring_alias_name" {
+  description = "monitoring 도메인의 Route53 ALIAS 레코드 이름"
+  type        = string
+  default     = "monitoring.shared.dolpin.site"
 }

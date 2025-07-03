@@ -76,6 +76,9 @@ resource "aws_instance" "this" {
   })
 
   user_data = var.user_data
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Target Group
@@ -110,8 +113,8 @@ resource "aws_lb_listener_rule" "https_rule" {
   }
 
   condition {
-    path_pattern {
-      values = var.path_patterns
+    host_header {
+      values = var.host_header_values
     }
   }
 

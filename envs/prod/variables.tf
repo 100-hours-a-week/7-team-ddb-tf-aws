@@ -252,6 +252,14 @@ variable "fe_secret_arns" {
   ]
 }
 
+variable "fe_allow_port" {
+  description = "CIDR 별로 허용할 포트 리스트"
+  type        = map(list(number))
+  default = {
+     "10.30.110.0/24" : [9100]
+  }
+}
+
 # BE
 variable "be_port" {
   description = "BE 애플리케이션 포트"
@@ -339,6 +347,14 @@ variable "be_secret_arns" {
     "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:prod/rds/credentials/secret-*",
     "arn:aws:secretsmanager:ap-northeast-2:794038223418:secret:codedeploy/discord/webhook-*"
   ]
+}
+
+variable "be_allow_port" {
+  description = "CIDR 별로 허용할 포트 리스트"
+  type        = map(list(number))
+  default = {
+    "10.30.110.0/24" : [8081,9100]
+  }
 }
 
 variable "nat_azs" {

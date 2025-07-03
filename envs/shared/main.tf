@@ -48,6 +48,11 @@ module "route53" {
       alias_name    = module.loadbalancer.alb_dns_name
       alias_zone_id = module.loadbalancer.alb_zone_id
     }
+    "${var.monitoring_alias_name}" = {
+      domain_name   = var.monitoring_alias_name
+      alias_name    = module.loadbalancer.alb_dns_name
+      alias_zone_id = module.loadbalancer.alb_zone_id
+    }
   }
   domains_records = {}
 }
@@ -69,9 +74,9 @@ module "jenkins_instance" {
   iam_instance_profile_name = module.iam_jenkins.instance_profile_name
   app_port                  = var.jenkins_port
   health_check_path         = var.jenkins_health_check_path
-  path_patterns             = var.jenkins_path
   https_listener_arn        = module.loadbalancer.https_listener_arn
   listener_rule_priority    = var.jenkins_listener_rule_priority
+  host_header_values = [var.jenkins_alias_name]
 }
 
 module "iam_jenkins" {
@@ -87,4 +92,39 @@ module "acm_seoul" {
   domain_name               = var.domain_name
   domain_zone_name = var.domain_zone_name
   subject_alternative_names = [var.domain_wildcard]
+}
+
+module "loki_backup" {
+  source      = "./modules/s3"
+  bucket_name = "loki-backup-bn2gz7v3he1rj0ia"
+}
+
+module "thanos_backup" {
+  source = "./modules/s3"
+  bucket_name = "thanos-backup-bn2gz7v3he1rj0ia"
+}
+
+module "monitoring_iam" {
+  source     = "./modules/iam/monitoring"
+  s3_buckets = local.s3_buckets
+  role_name  = "monitoring"
+}
+
+module "monitoring_instance" {
+  source                    = "./modules/ec2"
+  name_prefix               = "shared"
+  name                      = "monitoring"
+  instance_type             = var.monitoring_instance_type
+  ami_id                    = var.ami_id
+  subnet_id                 = module.network.private_subnet_ids["monitoring"]
+  vpc_id                    = module.network.vpc_id
+  user_data                 = base64encode(file("${path.module}/monitoring/script/startup.sh"))
+  ingress_rules             = var.monitoring_ingress_rules
+  common_tags               = var.common_tags
+  iam_instance_profile_name = module.monitoring_iam.instance_profile_name
+  app_port                  = var.monitoring_port
+  health_check_path         = var.monitoring_health_check_path
+  https_listener_arn        = module.loadbalancer.https_listener_arn
+  listener_rule_priority    = var.monitoring_listener_rule_priority
+  host_header_values = [var.monitoring_alias_name]
 }
