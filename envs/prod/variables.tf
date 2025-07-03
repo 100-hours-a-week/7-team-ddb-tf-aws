@@ -439,3 +439,9 @@ variable "snapshot_retention_limit" {
   type        = number
   default     = 1
 }
+
+variable "monitoring_cidr" {
+  description = "모니터링 인스턴스의 cidr"
+  type = string
+  default = "10.30.110.0/24"
+}
