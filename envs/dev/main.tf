@@ -104,7 +104,7 @@ module "rds" {
   common_tags           = var.common_tags
   env                   = var.env
   allow_sg_list         = [module.be.security_group_id]
-  allow_cidr_block_list = []
+  allow_cidr_block_list = [var.monitoring_cidr]
   db_engine             = var.db_engine
   db_engine_version     = var.db_engine_version
   db_instance_class     = var.db_instance_class
