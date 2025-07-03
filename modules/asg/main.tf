@@ -51,7 +51,7 @@ resource "aws_launch_template" "this" {
 
   user_data = base64encode(templatefile("${path.module}/scripts/startup.sh", {}))
 
-  vpc_security_group_ids = [aws_security_group.this.id]
+  vpc_security_group_ids = [aws_security_group.this.id, aws_security_group.monitoring.id]
 
   monitoring {
     enabled = true
