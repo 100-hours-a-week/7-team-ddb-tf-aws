@@ -228,3 +228,19 @@ module "codedeploy_backend" {
   enable_blue_green        = var.enable_blue_green
   common_tags              = var.common_tags
 }
+
+module "redis" {
+  source = "../../modules/redis"
+  vpc_id                   = module.network.vpc_id
+  redis_subnet_ids         = module.network.redis_subnet_ids 
+  allowed_cidrs            = []             
+  allow_sg_list            = [module.be.security_group_id]      
+  redis_prefix             = var.redis_prefix
+  redis_engine_version     = var.redis_engine_version
+  node_type                = var.node_type
+  cache_clusters           = var.cache_clusters
+  parameter_group_name     = var.parameter_group_name
+  snapshot_retention_limit = var.snapshot_retention_limit
+  env                      = var.env
+  common_tags              = var.common_tags
+}
