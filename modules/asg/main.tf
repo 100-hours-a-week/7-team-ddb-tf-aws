@@ -251,7 +251,7 @@ resource "aws_autoscaling_policy" "request_scaling" {
 }
 
 resource "aws_security_group" "monitoring" {
-  name        = "monitoring-sg"
+  name        = local.monitoring-sg
   description = "Allow inbound traffic from monitoring sources"
   vpc_id      = var.vpc_id
 

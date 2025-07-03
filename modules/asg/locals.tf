@@ -8,6 +8,7 @@ locals {
   volume_name         = "${var.component}-volume-${var.env}"
   instance_name       = "${var.component}-instance-${var.env}"
   scaling_policy_name = "${var.component}-scaling-${var.env}"
+  monitoring-sg       = "${var.component}-mon-sg-${var.env}"
 }
 
 # 기본 정책 Attach (SSM, CodeDeploy, ECR)
