@@ -88,6 +88,7 @@ resource "aws_lambda_function" "cost_report_lambda" {
 
   handler = "lambda_function.lambda_handler"
   runtime = "python3.13"
+  timeout = "60"
   tags = merge(var.common_tags, {
     Name = "${var.component}-lbd-${var.env}"
   })
