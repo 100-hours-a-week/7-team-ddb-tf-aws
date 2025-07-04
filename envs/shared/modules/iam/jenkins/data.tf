@@ -44,4 +44,17 @@ data "aws_iam_policy_document" "ci_policy_doc" {
       "arn:aws:iam::794038223418:role/backend-prod-codedeploy-role"
     ]
   }
+
+  statement {
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket"
+    ]
+    resources = [
+      "arn:aws:s3:::dolpin-terraform-state-bn2gz7v3he1rj0ia",
+      "arn:aws:s3:::dolpin-terraform-state-bn2gz7v3he1rj0ia/*"
+    ]
+  }
 }
