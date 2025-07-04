@@ -1,11 +1,29 @@
 import boto3
+from botocore.exceptions import ClientError
 import json
 import datetime
 import urllib.request
+from time import sleep
 
 # AWS 클라이언트 생성
 secrets_client = boto3.client('secretsmanager')
 ce = boto3.client('ce')
+
+def get_with_backoff(func, max_retries=5, base_delay=0.5, **kwargs):
+    for attempt in range(max_retries):
+        try:
+            return func(**kwargs)
+        except ClientError as e:
+            code = e.response.get('Error', {}).get('Code')
+            if code == 'LimitExceededException' and attempt < max_retries - 1:
+                delay = base_delay * (2 ** attempt)
+                print(f"⚠️ Rate limit 초과, {delay:.1f}s 후 재시도({attempt+1}/{max_retries})")
+                sleep(delay)
+                continue
+            # LimitExceeded가 아니거나 마지막 시도라면 에러 그대로 올림
+            raise
+    # (사실 위 로직에서 last attempt 뒤에는 어차피 raise 됨)
+    raise RuntimeError("지수 백오프 재시도 한도 초과")
 
 # Secrets Manager에서 Discord Webhook URL 가져오기
 def get_webhook_url():
@@ -70,17 +88,19 @@ def lambda_handler(event, context):
     label = "어제 하루"
 
     try:
-        daily_cost_data = ce.get_cost_and_usage(
+        daily_cost_data = get_with_backoff(
+            ce.get_cost_and_usage,
             TimePeriod={'Start': start, 'End': end},
             Granularity='DAILY',
             Metrics=['UnblendedCost']
         )
         daily_amount = daily_cost_data['ResultsByTime'][0]['Total']['UnblendedCost']['Amount']
-
+        sleep(1)
         # 이번 달 누적 비용 조회
         yesterday = now - datetime.timedelta(days=1)
         start_of_month = yesterday.replace(day=1).strftime('%Y-%m-%d')
-        monthly_cost_data = ce.get_cost_and_usage(
+        monthly_cost_data = get_with_backoff(
+            ce.get_cost_and_usage,
             TimePeriod={'Start': start_of_month, 'End': end},
             Granularity='MONTHLY',
             Metrics=['UnblendedCost']
