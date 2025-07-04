@@ -33,6 +33,16 @@ RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
 
 RUN gcloud version || echo "gcloud 설치 실패"
 
+# Terraform v1.11.4 설치
+ARG TERRAFORM_VERSION=1.11.4
+RUN curl -fsSL https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
+    -o terraform.zip && \
+    unzip terraform.zip && \
+    mv terraform /usr/local/bin/ && \
+    rm terraform.zip
+
+RUN terraform version || echo "Terraform 설치 실패"
+
 # 호스트 docker 그룹 GID에 맞춰 docker 그룹 생성 및 jenkins에 부여
 ARG DOCKER_GID_PLACEHOLDER
 RUN groupadd -g DOCKER_GID_PLACEHOLDER docker && usermod -aG docker jenkins
