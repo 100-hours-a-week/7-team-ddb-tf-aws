@@ -1,0 +1,140 @@
+pipeline {
+  agent any
+
+  environment {
+    AWS_DEFAULT_REGION     = 'ap-northeast-2'
+    TF_BACKEND_BUCKET      = 'dolpin-terraform-state-bn2gz7v3he1rj0ia'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Detect Target Envs') {
+      steps {
+        script {
+          def base = env.CHANGE_TARGET
+          if (!(base in ['dev', 'main'])) {
+            echo "PR base is not dev or main. Skipping."
+            currentBuild.result = 'SUCCESS'
+            return
+          }
+
+          sh "git fetch origin ${base}"
+          def changed = sh(
+            script: "git diff --name-only origin/${base}...HEAD",
+            returnStdout: true
+          ).trim()
+
+          if (changed == '') {
+            echo "No file changes detected in PR. Skipping."
+            currentBuild.result = 'SUCCESS'
+            return
+          }
+            
+          def diffFiles = changed.split('\n')  
+          def allEnvs = ['dev', 'prod', 'shared', 'static']
+          def detected = allEnvs.findAll { env ->
+            diffFiles.any { file -> file.startsWith("envs/${env}/") }
+          }
+
+
+          def filtered = (base == 'main') ? detected.findAll { it == 'prod' } : detected.findAll { it != 'prod' }
+          if (filtered.isEmpty()) {
+            echo "No terraform env changes detected. Skipping."
+            currentBuild.result = 'SUCCESS'
+            return
+          }
+
+          env.TARGET_ENVS = filtered.join(',')
+          echo "Terraform environments to plan: ${env.TARGET_ENVS}"
+        }
+      }
+    }
+
+    stage('Terraform Init') {
+      when {
+        expression { env.TARGET_ENVS?.trim() }
+      }
+      steps {
+        script {
+          env.TARGET_ENVS.split(',').each { tfEnv ->
+            def tfDir = "envs/${tfEnv}"
+            def tfKey = "${tfEnv}/terraform/terraform.tfstate"
+
+            dir(tfDir) {
+              sh """
+                terraform init \
+                  -backend-config="bucket=${TF_BACKEND_BUCKET}" \
+                  -backend-config="key=${tfKey}" \
+                  -backend-config="region=${AWS_DEFAULT_REGION}" \
+                  -backend-config="encrypt=true"
+              """
+            }
+          }
+        }
+      }
+    }
+
+    stage('Terraform Validate') {
+      when {
+        expression { env.TARGET_ENVS?.trim() }
+      }
+      steps {
+        script {
+          env.TARGET_ENVS.split(',').each { tfEnv ->
+            dir("envs/${tfEnv}") {
+              sh 'terraform validate'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Terraform Plan') {
+      when {
+        expression { env.TARGET_ENVS?.trim() }
+      }
+      steps {
+        script {
+          env.TARGET_ENVS.split(',').each { tfEnv ->
+            dir("envs/${tfEnv}") {
+              sh "terraform plan -input=false -no-color -out=${tfEnv}-tfplan"
+              sh "terraform show -no-color ${tfEnv}-tfplan > ${tfEnv}-plan.txt"
+
+              def planText = readFile("${tfEnv}-plan.txt")        
+              def summaryLines = planText.readLines().findAll {
+                it.trim().startsWith('+') || it.trim().startsWith('-') || it.trim().startsWith('~')
+              }
+              def joinedSummary = summaryLines.join('\n')
+              def escapedText = joinedSummary
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .take(1900)
+
+              def jenkinsUrl = env.BUILD_URL
+              def message = """
+              {
+                "content": "**[${tfEnv}] Terraform Plan**\\n[View Full Plan](${jenkinsUrl})\\n\\n```diff\\n${escapedText}\\n```"
+              }
+              """.stripIndent().trim()
+
+              writeFile file: 'discord_payload.json', text: message
+              withCredentials([string(credentialsId: 'Discord-Webhook', variable: 'WEBHOOK_URL')]) {
+                sh '''
+                  curl -X POST -H "Content-Type: application/json" \
+                      -d @discord_payload.json \
+                      "$WEBHOOK_URL"
+                '''
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
