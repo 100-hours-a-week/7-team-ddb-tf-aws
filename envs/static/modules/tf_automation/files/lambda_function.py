@@ -9,6 +9,8 @@ secrets_client = boto3.client("secretsmanager")
 rds_client = boto3.client("rds")
 tagging_client = boto3.client("resourcegroupstaggingapi")
 asg_client = boto3.client("autoscaling")
+ec2 = boto3.client("ec2")
+
 
 def generate_cloudwatch_log_url(function_name: str, region: str) -> str:
     log_group = f"/aws/lambda/{function_name}"
@@ -18,6 +20,7 @@ def generate_cloudwatch_log_url(function_name: str, region: str) -> str:
         f"?region={region}#logsV2:log-groups/log-group/{encoded}"
     )
 
+
 def get_webhook_url(secret_id: str = "discord/webhook") -> str:
     try:
         resp = secrets_client.get_secret_value(SecretId=secret_id)
@@ -26,6 +29,7 @@ def get_webhook_url(secret_id: str = "discord/webhook") -> str:
         print(f"Webhook URL 조회 실패: {e}")
         raise
 
+
 def send_embed_to_discord(
     env: str,
     action: str,
@@ -33,7 +37,9 @@ def send_embed_to_discord(
     log_url: str,
     webhook_url: str,
 ) -> None:
-    fields = [{"name": r["type"], "value": r["status"], "inline": True} for r in results]
+    fields = [
+        {"name": r["type"], "value": r["status"], "inline": True} for r in results
+    ]
     embed = {
         "title": f"{env.upper()} {action.upper()}",
         "url": log_url,
@@ -45,46 +51,56 @@ def send_embed_to_discord(
         req = urllib.request.Request(
             webhook_url,
             data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json", "User-Agent": "MyLambdaBot/1.0"},
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "MyLambdaBot/1.0",
+            },
         )
         with urllib.request.urlopen(req) as res:
             print(f"Discord 응답: {res.status}")
     except Exception as e:
         print(f"Discord 전송 실패: {e}")
 
+
 def get_tagged_asg_names(env: str) -> List[str]:
     try:
         resp = asg_client.describe_tags(
             Filters=[
-                {'Name': 'key', 'Values': ['Environment']},
-                {'Name': 'value', 'Values': [env]},
+                {"Name": "key", "Values": ["Environment"]},
+                {"Name": "value", "Values": [env]},
             ]
         )
-        return list({tag['ResourceId'] for tag in resp.get('Tags', [])})
+        return list({tag["ResourceId"] for tag in resp.get("Tags", [])})
     except Exception as e:
         print(f"ASG 태그 조회 실패: {e}")
         return []
 
-def scale_asg(name: str, action: str) -> bool:
+
+def scale_asg(
+    name: str, action: str, min_size: int, desire_size: int, max_size: int
+) -> bool:
     try:
-        if action == "stop":
-            asg_client.update_auto_scaling_group(
-                AutoScalingGroupName=name, MinSize=0, DesiredCapacity=0, MaxSize=0
-            )
-        else:
-            asg_client.update_auto_scaling_group(
-                AutoScalingGroupName=name,
-                MinSize=int(os.getenv("ASG_MIN", 1)),
-                DesiredCapacity=int(os.getenv("ASG_DESIRED", 1)),
-                MaxSize=int(os.getenv("ASG_MAX", 1)),
-            )
+        asg_client.update_auto_scaling_group(
+            AutoScalingGroupName=name,
+            MinSize=int(os.getenv("ASG_MIN", min_size)),
+            DesiredCapacity=int(os.getenv("ASG_DESIRED", desire_size)),
+            MaxSize=int(os.getenv("ASG_MAX", max_size)),
+        )
         print(f"ASG {name} {action} 성공")
         return True
     except Exception as e:
         print(f"ASG {name} {action} 실패: {e}")
         return False
 
-def handle_asg(env: str, action: str, results: List[Dict[str, str]]) -> None:
+
+def handle_asg(
+    env: str,
+    action: str,
+    min_size: int,
+    desire_size: int,
+    max_size: int,
+    results: List[Dict[str, str]],
+) -> None:
     asg_names = get_tagged_asg_names(env)
     if not asg_names:
         print(f"ASG 대상 없음 (Environment={env})")
@@ -94,10 +110,11 @@ def handle_asg(env: str, action: str, results: List[Dict[str, str]]) -> None:
     resp = asg_client.describe_auto_scaling_groups(AutoScalingGroupNames=asg_names)
     for grp in resp.get("AutoScalingGroups", []):
         name = grp["AutoScalingGroupName"]
-        success = scale_asg(name, action)
+        success = scale_asg(name, action, min_size, desire_size, max_size)
         results.append(
             {"type": f"ASG:{name}", "status": "success" if success else "fail"}
         )
+
 
 def handle_rds(env: str, action: str, results: List[Dict[str, str]]) -> None:
     rds_ids = []
@@ -131,9 +148,50 @@ def handle_rds(env: str, action: str, results: List[Dict[str, str]]) -> None:
 
     results.append({"type": "RDS", "status": "success"})
 
+
+def handle_ec2(env: str, action: str, results: List[Dict[str, str]]) -> None:
+    try:
+        ec2_res = ec2.describe_instances(
+            Filters=[{"Name": "tag:Environment", "Values": [env]}]
+        )
+    except Exception as e:
+        print(f"EC2 인스턴스 조회 실패: {e}")
+        results.append({"type": "EC2", "status": "fail"})
+        return
+
+    ec2_ids = []
+    for res in ec2_res.get("Reservations", []):
+        for inst in res.get("Instances", []):
+            state = inst["State"]["Name"]
+            if (action == "start" and state == "stopped") or (
+                action == "stop" and state == "running"
+            ):
+                ec2_ids.append(inst["InstanceId"])
+
+    if not ec2_ids:
+        print(f"EC2 {action} 대상 없음 (Environment={env})")
+        results.append({"type": "EC2", "status": "skip"})
+        return
+
+    try:
+        if action == "start":
+            ec2.start_instances(InstanceIds=ec2_ids)
+        else:
+            ec2.stop_instances(InstanceIds=ec2_ids)
+        print(f"EC2 {ec2_ids} {action} 성공")
+        results.append({"type": "EC2", "status": "success"})
+    except Exception as e:
+        print(f"EC2 {action} 실패: {e}")
+        results.append({"type": "EC2", "status": "fail"})
+
+
 def lambda_handler(event, context):
     action = event.get("action")
     env = event.get("env")
+    min_size = event.get("min_size")
+    desire_size = event.get("desire_size")
+    max_size = event.get("max_size")
+    
     if action not in ("start", "stop") or not env:
         print(f"Invalid invocation. action={action}, Environment={env}")
         return
@@ -144,18 +202,8 @@ def lambda_handler(event, context):
     webhook_url = get_webhook_url()
     log_url = generate_cloudwatch_log_url(context.function_name, region)
 
-    handle_asg(env, action, results)
+    handle_asg(env, action, min_size, desire_size, max_size, results)
     handle_rds(env, action, results)
+    handle_ec2(env, action, results)
 
     send_embed_to_discord(env, action, results, log_url, webhook_url)
-
-if __name__ == "__main__":
-    # 로컬 테스트용 이벤트
-    test_event = {"action": "start", "env": "prod"}
-
-    # 최소한의 context 모킹
-    class Context:
-        function_name = "local-test-function"
-    test_context = Context()
-
-    lambda_handler(test_event, test_context)
