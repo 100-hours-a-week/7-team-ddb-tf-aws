@@ -110,3 +110,17 @@ variable "lambda_schedules" {
     }
   }
 }
+
+variable "asg_config" {
+  description = "key: env, value: asg 인스턴스 크기"
+  type = map(object({
+    min_size     = number
+    desired_size = number
+    max_size     = number
+  }))
+  default = {
+    "dev"   : { "min_size": 1, "desired_size": 1, "max_size": 1 },
+    "shared": { "min_size": 0, "desired_size": 0, "max_size": 0 },
+    "prod"  : { "min_size": 1, "desired_size": 1, "max_size": 2 }
+  }
+}

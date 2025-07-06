@@ -93,7 +93,7 @@ resource "aws_iam_role_policy" "scheduler_lambda_invoke_policy" {
 
 # 스케줄러 설정 
 resource "aws_scheduler_schedule" "tf_automation_scheduler" {
-  for_each = var.lambda_schedules
+  for_each = local.lambda_schedules
 
   name = "tf_${each.key}"
   
@@ -110,6 +110,9 @@ resource "aws_scheduler_schedule" "tf_automation_scheduler" {
     input = jsonencode({
       action = each.value.action
       env    = each.value.env
+      min_size = each.value.min_size
+      desired_size = each.value.desired_size
+      max_size = each.value.max_size
     })
   }
 }

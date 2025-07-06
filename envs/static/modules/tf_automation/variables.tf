@@ -15,9 +15,18 @@ variable "component" {
 
 variable "lambda_schedules" {
   type = map(object({
-    schedule_expression          = string
-    action                       = string
-    env                          = string
+    schedule_expression = string
+    action              = string
+    env                 = string
   }))
   description = "환경별 Scheduler 설정"
+}
+
+
+variable "asg_config" {
+  type = map(object({
+    min_size     = number
+    desired_size = number
+    max_size     = number
+  }))
 }
