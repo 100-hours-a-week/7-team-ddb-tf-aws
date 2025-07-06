@@ -54,7 +54,9 @@ data "aws_iam_policy_document" "ci_policy_doc" {
     ]
     resources = [
       "arn:aws:s3:::dolpin-terraform-state-bn2gz7v3he1rj0ia",
-      "arn:aws:s3:::dolpin-terraform-state-bn2gz7v3he1rj0ia/*"
+      "arn:aws:s3:::dolpin-terraform-state-bn2gz7v3he1rj0ia/*",
+      "arn:aws:s3:::lily-terraform-state-bn2gz7v3he1rj0ia",
+      "arn:aws:s3:::lily-terraform-state-bn2gz7v3he1rj0ia/*"
     ]
   }
 }

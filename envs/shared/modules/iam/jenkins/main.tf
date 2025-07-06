@@ -13,6 +13,16 @@ resource "aws_iam_role_policy_attachment" "ecr" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
 }
 
+resource "aws_iam_role_policy_attachment" "jenkins_apply_attach" {
+  role       = aws_iam_role.this.name
+  policy_arn = "arn:aws:iam::794038223418:policy/dolpin-terraform"
+}
+
+resource "aws_iam_role_policy_attachment" "jenkins_codedeploy_full_access" {
+  role       = aws_iam_role.this.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
+}
+
 resource "aws_iam_policy" "jenkins_ci_policy" {
   name   = "jenkins-ci-policy"
   policy = data.aws_iam_policy_document.ci_policy_doc.json
