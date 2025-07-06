@@ -1,0 +1,102 @@
+pipeline {
+  agent any
+
+  environment {
+    AWS_DEFAULT_REGION     = 'ap-northeast-2'
+    TF_BACKEND_BUCKET      = 'dolpin-terraform-state-bn2gz7v3he1rj0ia'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Detect Changed Envs') {
+      steps {
+        script {
+          def branch = env.BRANCH_NAME
+          if (branch == 'main') {
+            env.TARGET_ENVS = 'prod'
+            echo "main 브랜치이므로 envs/prod에 대해 terraform apply를 수행합니다."
+            return
+          }
+
+          sh "git fetch origin ${branch} --prune --unshallow || true"
+          sh "git fetch origin"
+
+          def changedFiles = sh(
+            script: "git diff --name-only origin/${branch}~1 origin/${branch}",
+            returnStdout: true
+          ).trim()          
+
+          if (changedFiles == '') {
+            echo "변경된 파일이 없습니다. 종료합니다."
+            currentBuild.result = 'SUCCESS'
+            return
+          }
+
+          def files = changedFiles.split('\n')
+          def allowedEnvs = ['dev', 'shared', 'static']
+          def detected = allowedEnvs.findAll { env ->
+            files.any { file -> file.startsWith("envs/${env}/") }
+          }
+
+          if (detected.isEmpty()) {
+            echo "적용 대상 환경이 없습니다. 종료합니다."
+            currentBuild.result = 'SUCCESS'
+            return
+          }
+
+          env.TARGET_ENVS = detected.join(',')
+          echo "변경 감지된 환경 목록: ${env.TARGET_ENVS}"
+        }
+      }
+    }
+
+    stage('Terraform Init & Apply') {
+      when {
+        expression { env.TARGET_ENVS?.trim() }
+      }
+      steps {
+        script {
+          def ordered = ['dev', 'shared', 'static', 'prod']
+          def targets = env.TARGET_ENVS.split(',').sort { ordered.indexOf(it) }
+
+          targets.each { tfEnv ->
+            def tfDir = "envs/${tfEnv}"
+            def tfKey = "${tfEnv}/terraform/terraform.tfstate"
+
+            dir(tfDir) {
+              sh """
+                terraform init \
+                  -backend-config="bucket=${TF_BACKEND_BUCKET}" \
+                  -backend-config="key=${tfKey}" \
+                  -backend-config="region=${AWS_DEFAULT_REGION}" \
+                  -backend-config="encrypt=true"
+              """
+
+              sh "terraform apply -input=false -auto-approve"
+
+              def message = """
+              {
+                "content": "**[${tfEnv}] Terraform Apply 완료**"
+              }
+              """.stripIndent().trim()
+
+              writeFile file: 'discord_payload_apply.json', text: message
+              withCredentials([string(credentialsId: 'Discord-Webhook', variable: 'WEBHOOK_URL')]) {
+                sh '''
+                  curl -X POST -H "Content-Type: application/json" \
+                      -d @discord_payload_apply.json \
+                      "$WEBHOOK_URL"
+                '''
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
