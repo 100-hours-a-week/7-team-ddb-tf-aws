@@ -48,6 +48,9 @@ resource "aws_db_instance" "this" {
   multi_az                    = var.db_multi_az
   vpc_security_group_ids      = [aws_security_group.database.id]
   db_subnet_group_name        = aws_db_subnet_group.db_subnet_group.name
+  backup_retention_period     = var.db_backup_retention_period
+  backup_window               = var.db_backup_window
+  
   tags = merge(var.common_tags, {
     Name = "db-${var.env}"
   })
