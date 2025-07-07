@@ -16,6 +16,11 @@ pipeline {
     stage('Detect Target Envs') {
       steps {
         script {
+          if (!(env.BRANCH_NAME.startsWith("PR-"))) {
+            currentBuild.result = 'SUCCESS'
+            return
+          }
+
           def base = env.CHANGE_TARGET
           if (!(base in ['dev', 'main'])) {
             echo "PR base is not dev or main. Skipping."
@@ -40,7 +45,6 @@ pipeline {
           def detected = allEnvs.findAll { env ->
             diffFiles.any { file -> file.startsWith("envs/${env}/") }
           }
-
 
           def filtered = (base == 'main') ? detected.findAll { it == 'prod' } : detected.findAll { it != 'prod' }
           if (filtered.isEmpty()) {
