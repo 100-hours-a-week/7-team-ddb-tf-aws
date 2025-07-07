@@ -47,3 +47,13 @@ variable "db_multi_az" {
   description = "db가 multi az 지원 여부"
   type = bool
 }
+
+variable "db_backup_retention_period" {
+  description = "자동 백업 보관 기간 (일 단위, 최소 0일 ~ 최대 35일)"
+  type = string
+}
+
+variable "db_backup_window" {
+  description = "자동 백업이 수행될 선호 시간대 (UTC 기준)"
+  type = string
+}
