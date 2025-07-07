@@ -99,16 +99,18 @@ module "route53" {
 
 module "rds" {
   source = "../../modules/rds"
-    vpc_id                = module.network.vpc_id
-  db_subnet_ids         = module.network.db_subnet_ids
-  common_tags           = var.common_tags
-  env                   = var.env
-  allow_sg_list         = [module.be.security_group_id]
-  allow_cidr_block_list = [var.monitoring_cidr]
-  db_engine             = var.db_engine
-  db_engine_version     = var.db_engine_version
-  db_instance_class     = var.db_instance_class
-  db_multi_az           = var.db_multi_az
+  vpc_id                      = module.network.vpc_id
+  db_subnet_ids               = module.network.db_subnet_ids
+  common_tags                 = var.common_tags
+  env                         = var.env
+  allow_sg_list               = [module.be.security_group_id]
+  allow_cidr_block_list       = [var.monitoring_cidr]
+  db_engine                   = var.db_engine
+  db_engine_version           = var.db_engine_version
+  db_instance_class           = var.db_instance_class
+  db_multi_az                 = var.db_multi_az
+  db_backup_retention_period  = var.db_backup_retention_period
+  db_backup_window            = var.db_backup_window
 }
 
 module "fe" {
