@@ -82,9 +82,9 @@ def scale_asg(
     try:
         asg_client.update_auto_scaling_group(
             AutoScalingGroupName=name,
-            MinSize=int(os.getenv("ASG_MIN", min_size)),
-            DesiredCapacity=int(os.getenv("ASG_DESIRED", desire_size)),
-            MaxSize=int(os.getenv("ASG_MAX", max_size)),
+            MinSize=int(min_size),
+            DesiredCapacity=int(desire_size),
+            MaxSize=int( max_size),
         )
         print(f"ASG {name} {action} 성공")
         return True
@@ -191,12 +191,12 @@ def lambda_handler(event, context):
     min_size = event.get("min_size")
     desire_size = event.get("desire_size")
     max_size = event.get("max_size")
-    
+
     if action not in ("start", "stop") or not env:
         print(f"Invalid invocation. action={action}, Environment={env}")
         return
 
-    region = os.environ.get("AWS_REGION", "ap-northeast-2")
+    region = "ap-northeast-2"
     results: List[Dict[str, str]] = []
 
     webhook_url = get_webhook_url()
