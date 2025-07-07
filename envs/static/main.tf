@@ -33,4 +33,5 @@ module "tf_automation" {
   env              = var.env
   component        = "ta"
   lambda_schedules = var.lambda_schedules
+  asg_config = var.asg_config
 }
