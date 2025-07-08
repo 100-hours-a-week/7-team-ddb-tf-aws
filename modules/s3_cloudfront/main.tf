@@ -164,6 +164,56 @@ resource "aws_cloudfront_cache_policy" "image_cdn_cache" {
   }
 }
 
+resource "aws_cloudfront_cache_policy" "next_image_cache" {
+  name = "next-image-cache-${var.env}"
+
+  default_ttl = 3600   
+  max_ttl     = 86400 
+  min_ttl     = 0
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+
+    headers_config {
+      header_behavior = "whitelist"
+      headers {
+        items = ["Accept"]
+      }
+    }
+
+    query_strings_config {
+      query_string_behavior = "whitelist"
+      query_strings {
+        items = ["url", "w", "q"]  
+      }
+    }
+  }
+}
+
+resource "aws_cloudfront_origin_request_policy" "next_image_request" {
+  name = "next-image-request-${var.env}"
+
+  cookies_config {
+    cookie_behavior = "none"
+  }
+
+  headers_config {
+    header_behavior = "whitelist"
+    headers {
+      items = ["Accept"]
+    }
+  }
+
+  query_strings_config {
+    query_string_behavior = "whitelist"
+    query_strings {
+      items = ["url", "w", "q"]
+    }
+  }
+}
+
 resource "aws_cloudfront_response_headers_policy" "cors" {
   name = "cors-policy-${var.env}"
 
