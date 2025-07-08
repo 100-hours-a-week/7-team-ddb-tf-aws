@@ -197,6 +197,7 @@ module "s3_cloudfront" {
   acm_certificate_arn  = module.acm_nova.cert_arn
   common_tags          = var.common_tags
   cors_origins         = var.cors_origins
+  next_domain_name     = var.fe_alias_name
 }
 
 module "s3_deployment" {
