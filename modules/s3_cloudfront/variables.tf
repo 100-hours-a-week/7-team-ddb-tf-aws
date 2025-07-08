@@ -29,3 +29,8 @@ variable "cors_origins" {
   type        = list(string)
   default     = []
 }
+
+variable "next_domain_name" {
+  description = "Next.js 서버 도메인"
+  type        = string
+}

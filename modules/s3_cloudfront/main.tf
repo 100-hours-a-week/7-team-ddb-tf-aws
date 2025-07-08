@@ -23,7 +23,7 @@ resource "aws_s3_bucket_public_access_block" "this" {
 
   block_public_acls       = true
   ignore_public_acls      = true
-  block_public_policy     = false
+  block_public_policy     = true
   restrict_public_buckets = true
 }
 
@@ -74,6 +74,30 @@ resource "aws_cloudfront_distribution" "this" {
     domain_name = aws_s3_bucket.this.bucket_regional_domain_name
     origin_id   = "S3-${aws_s3_bucket.this.id}"
     origin_access_control_id = aws_cloudfront_origin_access_control.this.id
+  }
+
+  origin {
+    domain_name = var.next_domain_name
+    origin_id   = "NextJS-App"
+    
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  ordered_cache_behavior {
+    path_pattern     = "/_next/image"
+    target_origin_id = "NextJS-App"  
+    
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    viewer_protocol_policy = "redirect-to-https"
+    cache_policy_id = aws_cloudfront_cache_policy.next_image_cache.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.next_image_request.id
+    compress = true
   }
 
   enabled             = true
@@ -130,7 +154,7 @@ resource "aws_cloudfront_cache_policy" "image_cdn_cache" {
     headers_config {
       header_behavior = "whitelist"
       headers {
-        items = ["Origin"]
+        items = ["Accept"]
       }
     }
 
