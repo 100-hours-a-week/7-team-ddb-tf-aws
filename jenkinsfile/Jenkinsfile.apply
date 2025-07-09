@@ -79,7 +79,7 @@ pipeline {
       }
     }
 
-    tage('Manual Approval') {
+    stage('Manual Approval') {
       when {
         expression { env.TARGET_ENVS?.trim() }
       }
