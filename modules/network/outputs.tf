@@ -36,3 +36,8 @@ output "private_route_table_ids" {
     for az, rt in aws_route_table.private : az => rt.id
   }
 }
+
+output "private_route_table_id_list" {
+  description = "private route table id list"
+  value = values(aws_route_table.private)[*].id
+}
