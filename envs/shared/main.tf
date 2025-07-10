@@ -128,3 +128,8 @@ module "monitoring_instance" {
   listener_rule_priority    = var.monitoring_listener_rule_priority
   host_header_values = [var.monitoring_alias_name]
 }
+
+module "vpn_networking" {
+  source = "./modules/vpn_networking"
+  private_rt = module.network.private_route_table_ids
+}
