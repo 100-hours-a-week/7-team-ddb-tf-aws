@@ -189,7 +189,7 @@ def lambda_handler(event, context):
     action = event.get("action")
     env = event.get("env")
     min_size = event.get("min_size")
-    desire_size = event.get("desire_size")
+    desire_size = event.get("desired_size")
     max_size = event.get("max_size")
 
     if action not in ("start", "stop") or not env:
