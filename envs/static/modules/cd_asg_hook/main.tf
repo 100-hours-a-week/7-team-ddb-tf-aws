@@ -83,6 +83,29 @@ resource "aws_lambda_function" "codedeploy_trigger" {
   tags = var.common_tags
 }
 
+resource "aws_cloudwatch_event_rule" "asg_event" {
+  name = "${var.component}-${var.env}-asg-lifecycle"
+
+  event_pattern = jsonencode({
+    "source": ["aws.autoscaling"],
+    "detail-type": ["EC2 Instance-launch Lifecycle Action"]
+  })
+}
+
+resource "aws_cloudwatch_event_target" "asg_lambda_target" {
+  rule      = aws_cloudwatch_event_rule.asg_event.name
+  target_id = "trigger-lambda"
+  arn       = aws_lambda_function.codedeploy_trigger.arn
+}
+
+resource "aws_lambda_permission" "allow_eventbridge" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.codedeploy_trigger.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.asg_event.arn
+}
+
 data "archive_file" "lambda" {
   type        = "zip"
   source_dir  = "${path.module}/files"
