@@ -35,3 +35,10 @@ module "tf_automation" {
   lambda_schedules = var.lambda_schedules
   asg_config = var.asg_config
 }
+
+module "codedeploy_asg_hook" {
+  source           = "./modules/cd_asg_hook"
+  common_tags      = var.common_tags
+  env              = var.env
+  component        = "cdhook"
+}

@@ -276,3 +276,11 @@ resource "aws_security_group" "monitoring" {
     Name = "monitoring-sg"
   }
 }
+
+resource "aws_autoscaling_lifecycle_hook" "deploy_hook" {
+  name                    = "codedeploy-launch-hook-${var.env}-${var.component}"
+  autoscaling_group_name = aws_autoscaling_group.this.name
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
+  heartbeat_timeout       = 300
+  default_result          = "ABANDON"
+}
