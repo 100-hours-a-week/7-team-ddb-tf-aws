@@ -103,7 +103,7 @@ pipeline {
       steps {
         script {
           def ordered = ['dev', 'shared', 'static', 'prod']
-          def targets = env.TARGET_ENVS.split(',').sort { ordered.indexOf(it) }
+          def targets = env.TARGET_ENVS.split(',')
 
           targets.each { tfEnv ->
             def tfDir = "envs/${tfEnv}"
